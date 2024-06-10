@@ -482,6 +482,12 @@ class SFinder(object):
 			
 		elif image_ext==".png" or image_ext==".jpg":
 			image_data= plt.imread(image_path)
+			image_shape= image_data.shape
+			ndim= image_data.ndim
+			if ndim==3 and image_shape[2]==4:# remove alpha channel
+				image_without_alpha = image_data[:,:,:3]
+				image_data= image_without_alpha
+				
 			header= None
 						
 		else:
