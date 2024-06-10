@@ -487,7 +487,7 @@ class Analyzer(object):
 			
 			rmeta= regions.RegionMeta({"text": sname, "tag": tags})
 			rvisual= regions.RegionVisual({"color": color})
-			r= regions.RectanglePixelRegion(xc, yc, dx, dy, meta=rmeta, visual= rvisual)
+			r= regions.RectanglePixelRegion(PixCoord(xc, yc), dx, dy, meta=rmeta, visual= rvisual)
 			self.obj_regions.append(r)
 	
 
