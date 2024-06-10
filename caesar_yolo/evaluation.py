@@ -152,7 +152,8 @@ class Analyzer(object):
 		# - Pre-process image?
 		dp= self.config['preprocess_fcn']
 		if dp is not None:
-			self.image= dp(image)
+			image_proc= dp(self.image)
+			self.image= image_proc
 		
 		# - Compute model predictions
 		results= self.model(
