@@ -121,7 +121,7 @@ class Analyzer(object):
 	# ========================
 	# ==     PREDICT
 	# ========================
-	def predict(self):
+	def predict(self, image, image_id='', header=None, xmin=0, ymin=0):
 		""" Predict results on given image """
 		
 		# - Throw error if image is None
