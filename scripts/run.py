@@ -213,8 +213,7 @@ def main():
 	if procId==0:
 		print("Weights: ", args.weights)
 		print("scoreThr: ",args.scoreThr)
-		print("classdict: ",args.classdict)
-
+		
 	#===========================
 	#==   SET PARAMETERS
 	#===========================
