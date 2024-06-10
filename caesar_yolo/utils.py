@@ -215,9 +215,14 @@ def read_fits(filename, strip_deg_axis=False):
 		header= strip_deg_axis_from_header(header)
 
 	# - Get WCS
-	wcs = WCS(header)
+	wcs= None
+	try:
+		wcs = WCS(header)
+	except Exception as e:
+		logger.warn("Failed to get wcs from header (err=%s)!" % (str(e)))	
+		
 	if wcs is None:
-		logger.warn("No WCS in input image!")
+		logger.warn("No WCS in input image or failed to extract it!")
 	
 	# - Close file
 	hdu.close()
