@@ -208,7 +208,7 @@ class TileTask(object):
 		analyzer.write_to_ds9= self.save_regions
 		analyzer.outfile_ds9= 'catalog_' + self.image_id + '_tid' + str(self.tid) + '.reg'
 		analyzer.save_img= self.save_img
-		analyzer.outfile_img= 'timg_' + self.image_id + '_tid' + str(self.tid) + '.reg'
+		analyzer.outfile_img= 'timg_' + self.image_id + '_tid' + str(self.tid) + '.fits'
 		analyzer.obj_name_tag= self.sname_tag
 
 		if analyzer.predict(self.imgdata, self.image_id, header=self.imgheader, xmin=self.ix_min, ymin=self.iy_min)<0:
