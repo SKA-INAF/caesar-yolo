@@ -188,8 +188,8 @@ class TileTask(object):
 		
 		res= utils.read_fits_crop(
 			image_path, 
-			xmin= self.ix_min, xmax= self.ix_max,
-			ymin= self.iy_min, ymax= self.iy_max,
+			ixmin= self.ix_min, ixmax= self.ix_max,
+			iymin= self.iy_min, iymax= self.iy_max,
 			strip_deg_axis=True
 		)
 		if res is None:
