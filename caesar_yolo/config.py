@@ -34,13 +34,18 @@ CONFIG = {
 	'merge_overlap_iou_thr_hard': 0.8,
 	'score_thr': 0.7,
 
-	# - Catalog output file options
+	# - Catalog json output options
 	'save_catalog': True,
 	'save_tile_catalog': False,
+	'outfile_json': '',
+	
+	# - DS9 region output options
 	'save_region': True,
 	'save_tile_region': False,
 	'outfile': '',
-	'outfile_json': '',
+	
+	# - Image output file options
+	'save_img': False,
 	'save_tile_img': False,
 	
 	# - Save inference plot
