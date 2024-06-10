@@ -123,8 +123,14 @@ def parse_args():
 	parser.set_defaults(draw_plots=False)
 	parser.add_argument('--draw_class_label_in_caption', dest='draw_class_label_in_caption', action='store_true')	
 	parser.set_defaults(draw_class_label_in_caption=False)
+	
+	# - SAVE OPTIONS
 	parser.add_argument('--save_plots', dest='save_plots', action='store_true')	
 	parser.set_defaults(save_plots=False)
+	parser.add_argument('--save_tile_catalog', dest='save_tile_catalog', action='store_true')	
+	parser.set_defaults(save_tile_catalog=False)
+	parser.add_argument('--save_tile_region', dest='save_tile_region', action='store_true')	
+	parser.set_defaults(save_tile_region=False)
 	
 	args = parser.parse_args()
 
@@ -176,6 +182,8 @@ def run_inference(args, model, config):
 
 	# - Create sfinder and detect sources
 	sfinder= SFinder(model, config)
+	#sfinder.save_tile_regions= args.save_tile_regions
+	#sfinder.save_tile_json= args.save_tile_catalog
 
 	if args.split_img_in_tiles:
 		logger.info("Running sfinder parallel version ...")
@@ -298,7 +306,9 @@ def main():
 	CONFIG['draw_plot']= args.draw_plots
 	CONFIG['draw_class_label_in_caption']= args.draw_class_label_in_caption
 	CONFIG['save_plot']= args.save_plots
-
+	CONFIG['save_tile_catalog']= args.save_tile_catalog
+	CONFIG['save_tile_region']= args.save_tile_region
+	
 	logger.info("[PROC %d] Config options: %s" % (procId, str(CONFIG)))
 
 	#===========================

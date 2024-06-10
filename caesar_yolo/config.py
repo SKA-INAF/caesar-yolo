@@ -36,7 +36,9 @@ CONFIG = {
 
 	# - Catalog output file options
 	'save_catalog': True,
+	'save_tile_catalog': False,
 	'save_region': True,
+	'save_tile_region': False,
 	'outfile': '',
 	'outfile_json': '',
 	

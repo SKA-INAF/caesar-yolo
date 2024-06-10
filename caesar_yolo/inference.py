@@ -181,6 +181,11 @@ class TileTask(object):
 
 		# - Read image
 		image_path= self.config['image_path']
+		image_ext= os.path.splitext(image_path)[1]
+		if image_ext!='.fits':
+			logger.error("[PROC %d] Only FITS images are supported in parallel run (task %d), exit!" % (self.procId, self.tid))
+			return -1
+		
 		res= utils.read_fits_crop(
 			image_path, 
 			xmin= self.ix_min, xmax= self.ix_max,
@@ -209,15 +214,14 @@ class TileTask(object):
 
 		# - Get raw and jsonized results
 		#   NB: return if no object was detected
-		bboxes_det= analyzer.bboxes
+		bboxes_det= analyzer.bboxes_final
 		if not bboxes_det:
 			logger.info("[PROC %d] No object detected in tile image for task %d ..." % (self.procId, self.tid))
 			return 0
-
+		
 		self.bboxes_det= bboxes_det
 		self.scores_det= analyzer.scores_final	
 		self.classid_det= analyzer.class_ids_final
-		self.masks_det= analyzer.masks_final
 		self.det_sources= analyzer.results
 
 		# - Add tile info to detected source dictionary
@@ -302,9 +306,8 @@ class SFinder(object):
 		self.sources= {"sources": []}
 
 		# - Save DS9 regions options
-		self.save_tile_regions= True
-		self.write_to_ds9= True	
-		self.use_polygon_regions= True
+		self.save_tile_regions= config['save_tile_region']
+		self.write_to_ds9= config['save_region']
 		self.sregions= []
 		self.outfile_ds9= ""
 		self.class_color_map_ds9= {
@@ -318,8 +321,8 @@ class SFinder(object):
 		}
 
 		# - Save json catalog output file
-		self.save_tile_json= True
-		self.write_to_json= True
+		self.save_tile_json= config['save_tile_catalog']
+		self.write_to_json= config['save_catalog']
 		self.outfile_json= ""
 		
 		
@@ -611,18 +614,6 @@ class SFinder(object):
 			logger.info("[PROC %d] Merging sources at tile edges ..." % self.procId)
 			self.merge_edge_sources()
 
-		# - Compute source parameters
-		if self.procId==self.MASTER_ID:
-			logger.info("[PROC %d] Computing source parameters ..." % self.procId)
-			for i in range(len(self.sources["sources"])):
-				source= self.sources["sources"][i]
-				sparams= self.compute_source_params(source)
-				
-				# - Append params to source dictionary
-				if sparams:
-					self.sources["sources"][i].update(sparams)
-
-
 		# - Save to file
 		if self.procId==self.MASTER_ID:
 			logger.info("[PROC %d] Saving source results to file ..." % self.procId)
@@ -748,7 +739,7 @@ class SFinder(object):
 			xmax= source["x2"]
 			ymin= source["y1"] 
 			ymax= source["y2"]
-			pixels= source["pixels"]
+			##pixels= source["pixels"]
 
 			logger.info("[PROC %d] Searching for sources adjacent/overlapping to source %s (wid=%d, tid=%d) ..." % (self.procId, sname, wid, tid))
 			print("--> neighbors")
@@ -766,7 +757,7 @@ class SFinder(object):
 				xmax_j= source_j["x2"]
 				ymin_j= source_j["y1"] 
 				ymax_j= source_j["y2"]
-				pixels_j= source_j["pixels"]
+				##pixels_j= source_j["pixels"]
 				
 				# - Skip if tid_j is not among neighbor tiles
 				if tid_j not in tids_neighbor:
@@ -781,40 +772,8 @@ class SFinder(object):
 					logger.info("[PROC %d] Skipping source %s (wid=%d, tid=%d) as bbox [%d,%d,%d,%d] is not overlapping with [%d,%d,%d,%d] ..." % (self.procId, sname_j, wid_j, tid_j, xmin_j, xmax_j, ymin_j, ymax_j, xmin, xmax, ymin, ymax))
 					continue
 
-				logger.info("[PROC %d] Sources %s (wid=%d, tid=%d) and %s (wid=%d, tid=%d) have overlapping bounding boxes, checking if they have overlapping pixels ..." % (self.procId, sname, wid, tid, sname_j, wid_j, tid_j))
+				logger.info("[PROC %d] Sources %s (wid=%d, tid=%d) and %s (wid=%d, tid=%d) have overlapping bounding boxes, selected for merging  ..." % (self.procId, sname, wid, tid, sname_j, wid_j, tid_j))
 
-				# - Check if source pixels are overlapping
-				overlapping= False
-				for pixel in pixels:
-					#x= pixel[0]
-					#y= pixel[1]
-					x= pixel[1]
-					y= pixel[0]
-					for pixel_j in pixels_j:	
-						#x_j= pixel_j[0]
-						#y_j= pixel_j[1]
-						x_j= pixel_j[1]
-						y_j= pixel_j[0]
-						distX= x - x_j
-						distY= y - y_j
-						areAdjacent= (np.abs(distX)<=1 and np.abs(distY)<=1)
-				
-						## DEBUG ##
-						#if sname=="S19_t1" and sname_j=="S24_t5":
-						#	logger.info("[PROC %d] pix(%d,%d), pix_j(%d,%d), dX=%d, dY=%d, adjacent? %d" % (self.procId, x, y, x_j, y_j, distX, distY, areAdjacent) )
-						###########
-
-						if areAdjacent:
-							overlapping= True
-							break
-					if overlapping:
-						break
-
-				if not overlapping:
-					logger.info("[PROC %d] Sources %s (wid=%d, tid=%d) and %s (wid=%d, tid=%d) don't have overlapping pixels, not selected for merging ..." % (self.procId, sname,wid, tid, sname_j, wid_j, tid_j))
-					continue
-
-				logger.info("[PROC %d] Edge sources %s (wid=%d, tid=%d) and %s (wid=%d, tid=%d) are adjacent and selected for merging..." % (self.procId, sname, wid, tid, sname_j, wid_j, tid_j))
 				g.addEdge(i,j)
 				
 		# - Find all connected sources in graph and merge them
@@ -842,88 +801,96 @@ class SFinder(object):
 				logger.info("[PROC %d] Adding single edge source %s (wid=%d, tid=%d) to list with name %s ..." % (self.procId, sname, wid, tid, sname_merged))
 
 			else: 
-				index_largest= -1 
-				npix_largest= -1
-				pixels_merged= []
+				index_largest= -1
+				bbox_area_largest= -1
+				bboxes_to_be_merged= []
+				###npix_largest= -1
+				###pixels_merged= []
 				
 				for j in range(n_merged):
 					index= cc[i][j]
 					sindex= sourcesToBeMerged[index].sindex
 					tindex= sourcesToBeMerged[index].tindex
 					source= self.tile_sources["sources"][tindex]["objs"][sindex]
-					pixels= source["pixels"]
-					npix= len(pixels)
-					if npix>npix_largest:
-						npix_largest= npix
+					x1= source["x1"] 
+					x2= source["x2"]
+					y1= source["y1"] 
+					y2= source["y2"]
+					bbox= (x1,y1,x2,y2)
+					bbox_area= (x2-x1)*(y2-y1)
+					if bbox_area>bbox_area_largest:
+						bbox_area_largest= bbox_area
 						index_largest= index
+				
+					bboxes_to_be_merged.append(bbox)
+				
+					###pixels= source["pixels"]
+					###npix= len(pixels)
+					###if npix>npix_largest:
+					###	npix_largest= npix
+					###	index_largest= index
 
 					# - Merge pixels (without duplicates)
-					#merged= pixels_merged + [x for x in pixels if x not in pixels_merged]
-					merged= pixels_merged + [x for x in pixels if x not in pixels_merged]
-					pixels_merged= merged
+					###merged= pixels_merged + [x for x in pixels if x not in pixels_merged]
+					###pixels_merged= merged
 
 				# - Set class & score of merged source
-				sindex_largest= sourcesToBeMerged[index].sindex
-				tindex_largest= sourcesToBeMerged[index].tindex
+				sindex_largest= sourcesToBeMerged[index_largest].sindex
+				tindex_largest= sourcesToBeMerged[index_largest].tindex
 				source_largest= self.tile_sources["sources"][tindex_largest]["objs"][sindex_largest]
 				score_merged= source_largest["score"]
 				className_merged= source_largest["class_name"]
 				classId_merged= source_largest["class_id"]
 
-				# - Compute new bbox
-				pix_min= np.min(pixels_merged,axis=0)
-				pix_max= np.max(pixels_merged,axis=0)
-				#xmin= pix_min[0]
-				#xmax= pix_max[0]
-				#ymin= pix_min[1]
-				#ymax= pix_max[1]
-				xmin= pix_min[1]
-				xmax= pix_max[1]
-				ymin= pix_min[0]
-				ymax= pix_max[0]
-				dx= xmax-xmin+1
-				dy= ymax-ymin+1
+				# - Compute new bbox (merge of individual bboxes)
+				bbox_merged= utils.get_merged_bbox()
+				x1_merged= bbox_merged[0]
+				y1_merged= bbox_merged[1]
+				x2_merged= bbox_merged[2]
+				y2_merged= bbox_merged[3]
+				
+				#pix_min= np.min(pixels_merged,axis=0)
+				#pix_max= np.max(pixels_merged,axis=0)
+				#xmin= pix_min[1]
+				#xmax= pix_max[1]
+				#ymin= pix_min[0]
+				#ymax= pix_max[0]
+				#dx= xmax-xmin+1
+				#dy= ymax-ymin+1
 
 				# - Compute new vertices
-				offset= 10
-				#padded_mask = np.zeros( (ymax + 2, xmax + 2), dtype=np.uint8)
-				#for item in pixels_merged:padded_mask.itemset(item[1],item[0])
-				padded_mask= np.zeros((dy+2*offset,dx+2*offset),dtype=np.uint8)
-				#pp= np.flip(pixels_merged,1) - [ymin,xmin]
-				pp= np.array(pixels_merged) - [ymin,xmin]
-				#cv2.fillConvexPoly(padded_mask, pp, 1)
-				for item in pp:
-					padded_mask[item[0]+offset,item[1]+offset]= 1				
+				#offset= 10
+				#padded_mask= np.zeros((dy+2*offset,dx+2*offset),dtype=np.uint8)
+				#pp= np.array(pixels_merged) - [ymin,xmin]
+				#for item in pp:
+				#	padded_mask[item[0]+offset,item[1]+offset]= 1				
 
-				contours = find_contours(padded_mask, 0.5)
-				vertexes= []
-				for verts in contours:
-					# - Subtract the padding and flip (y, x) to (x, y)
-					#verts = np.fliplr(verts) - 1
-					verts = np.fliplr(verts)
-					vertexes.append(verts.tolist())
+				#contours = find_contours(padded_mask, 0.5)
+				#vertexes= []
+				#for verts in contours:
+				#	# - Subtract the padding and flip (y, x) to (x, y)
+				#	verts = np.fliplr(verts)
+				#	vertexes.append(verts.tolist())
 
-				vertex_list= vertexes
-				for k in range(len(vertex_list)):
-					for nvert in range(len(vertex_list[k])):
-						vertex_list[k][nvert][0]+= xmin-offset
-						vertex_list[k][nvert][1]+= ymin-offset
+				#vertex_list= vertexes
+				#for k in range(len(vertex_list)):
+				#	for nvert in range(len(vertex_list[k])):
+				#		vertex_list[k][nvert][0]+= xmin-offset
+				#		vertex_list[k][nvert][1]+= ymin-offset
 
 				# - Make merged source and append to list
 				source_merged= {}
-				source_merged["name"]= sname_merged
-				source_merged["x1"]= xmin
-				source_merged["x2"]= xmax
-				source_merged["y1"]= ymin
-				source_merged["y2"]= ymax
+				source_merged["name"]= str(sname_merged)
+				source_merged["x1"]= float(x1_merged)
+				source_merged["x2"]= float(x2_merged)
+				source_merged["y1"]= float(y1_merged)
+				source_merged["y2"]= float(y2_merged)
 				source_merged["edge"]= True
 				source_merged["merged"]= True
 				source_merged["score"]= score_merged
 				source_merged["class_name"]= className_merged
 				source_merged["class_id"]= classId_merged
-				source_merged["pixels"]= pixels_merged
-				source_merged["vertexes"]= vertex_list
-
+				
 				self.sources["sources"].append(source_merged)
 
 		# - Create final list of extracted sources
@@ -989,228 +956,7 @@ class SFinder(object):
 		return 0
 
 
-	####################################
-	###      COMPUTE SOURCE PARAMS
-	####################################
-	def compute_source_params(self, source, offset=10):
-		""" Compute source parameters """
 	
-		params= {}
-		
-		# - Returns if not done by MASTER ID
-		if self.procId!=self.MASTER_ID:
-			return
-
-		# - Compute source binary mask
-		sname= source["name"]
-		pixels= source["pixels"]
-		xmin= source["x1"]
-		xmax= source["x2"]
-		ymin= source["y1"]
-		ymax= source["y2"]
-		dx= xmax-xmin+1
-		dy= ymax-ymin+1
-
-		img_offset_x= min( min(offset, self.nx-1-xmax), min(offset, xmin) )
-		img_offset_y= min( min(offset, self.ny-1-ymax), min(offset, ymin) )
-		xoffset= xmin - img_offset_x
-		yoffset= ymin - img_offset_y
-		
-
-		smask= np.zeros((dy+2*img_offset_y, dx+2*img_offset_x), dtype=np.uint8)
-		
-		for pixel in pixels:
-			x= pixel[1]
-			y= pixel[0]
-			x_mask= x - xoffset
-			y_mask= y - yoffset
-			smask[y_mask][x_mask]= 1
-
-		logger.info("[PROC %d] Source %s: smask shape (%d,%d) " % (self.procId, sname, smask.shape[0], smask.shape[1]))
-
-		# - Compute source mask
-		image_path= self.config['image_path']
-		res= utils.read_fits_crop(
-			image_path,
-			xmin-img_offset_x, xmax+img_offset_x+1,
-			ymin-img_offset_y, ymax+img_offset_y+1,
-			strip_deg_axis=True
-		)		
-
-		if res is None:
-			logger.error("[PROC %d] Failed to read image %s!" % (self.procId, image_path))
-			return None
-			
-		simg, header, wcs= res
-
-		logger.info("[PROC %d] Source %s: imgdata shape (%d,%d) " % (self.procId, sname, simg.shape[0], simg.shape[1]))
-
-		simg[smask==0]= 0
-		sdata_1d= simg[smask>0]
-
-		# - Compute flux mean/sigma etc
-		logger.info("[PROC %d] Computing flux parameters for source %s ... " % (self.procId, sname))
-
-		S= np.nansum(sdata_1d)
-		npix= sdata_1d.size - np.isnan(sdata_1d).sum()
-		Smin= np.nanmin(sdata_1d)
-		Smax= np.nanmax(sdata_1d)
-		Smean, Smedian, Sstddev= sigma_clipped_stats(sdata_1d)
-			
-		# - Compute moments from binary image and centroid in pixel coordinates
-		logger.info("[PROC %d] Computing moments and centroid from binary image for source %s ... " % (self.procId, sname))
-		moments= cv.moments(smask, True)	
-		centroid= (moments["m10"]/moments["m00"], moments["m01"]/moments["m00"])	
-		x0= centroid[0] + xoffset
-		y0= centroid[1] + yoffset
-
-		# - Compute flux-weighted centroid in pixel coordinates
-		logger.info("[PROC %d] Computing flux-weighted centroid in pixel coordinates for source %s ... " % (self.procId, sname))
-		moments_w= cv.moments(simg, False)	
-		if moments_w["m00"]==0:
-			logger.warn("[PROC %d] Moment 00 is =0 for source %s, setting weighted centroid to non-weighted one..." % (self.procId, sname))
-			x0_w= x0
-			y0_w= y0
-		else:
-			centroid= (moments_w["m10"]/moments_w["m00"], moments_w["m01"]/moments_w["m00"])	
-			x0_w= centroid[0] + xoffset
-			y0_w= centroid[1] + yoffset
-
-		# - Compute centroids in sky coordinates
-		logger.info("[PROC %d] Computing centroid in sky coordinates for source %s ... " % (self.procId, sname))
-		if self.wcs.naxis==3:
-			coords = self.wcs.all_pix2world([[x0,y0,0]],0)
-			coords_w = self.wcs.all_pix2world([[x0_w,y0_w,0]],0)
-			#coord_bbox= self.wcs.all_pix2world([[self.x,self.y,0]],0)
-			#coord_bbox_corner= self.wcs.all_pix2world([[self.xmax,self.ymax,0]],0)
-
-		elif self.wcs.naxis==4:
-			coords = self.wcs.all_pix2world([[x0,y0,0,0]],0)
-			coords_w = self.wcs.all_pix2world([[x0_w,y0_w,0,0]],0)
-			#coord_bbox= self.wcs.all_pix2world([[self.x,self.y,0,0]],0)
-			#coord_bbox_corner= self.wcs.all_pix2world([[self.xmax,self.ymax,0,0]],0)
-
-		else:
-			coords = self.wcs.all_pix2world([[x0,y0]],0)
-			coords_w = self.wcs.all_pix2world([[x0_w,y0_w]],0)
-			#coord_bbox= self.wcs.all_pix2world([[self.x,self.y]],0)
-			#coord_bbox_corner= self.wcs.all_pix2world([[self.xmax,self.ymax]],0)
-
-		x0_wcs= coords[0][0]
-		y0_wcs= coords[0][1]
-		x0_w_wcs= coords_w[0][0]
-		y0_w_wcs= coords_w[0][1]
-		#x_wcs= coord_bbox[0][0]
-		#y_wcs= coord_bbox[0][1]
-		#xmax_wcs= coord_bbox_corner[0][0]
-		#ymax_wcs= coord_bbox_corner[0][1]
-
-		# - Find contours
-		#contours, _= cv.findContours(self.mask_data.astype(np.uint8), mode=cv.RETR_EXTERNAL, method=cv.CHAIN_APPROX_SIMPLE, offset=(self.bbox.ixmin,self.bbox.iymin))
-		#self.contour= contours[0]    
-	
-		# - Find the min enclosing circle
-		#(cx,cy), r = cv.minEnclosingCircle(self.contour)
-		#self.x0_mincircle= cx
-		#self.y0_mincircle= cy
-		#self.min_radius= r
-		
-		#if self.wcs.naxis==3:
-		#	coords_mincircle = self.wcs.all_pix2world([[self.x0_mincircle,self.y0_mincircle,0]],0)
-		#elif self.wcs.naxis==4:
-		#	coords_mincircle = self.wcs.all_pix2world([[self.x0_mincircle,self.y0_mincircle,0,0]],0)
-		#else:
-		#	coords_mincircle = self.wcs.all_pix2world([[self.x0_mincircle,self.y0_mincircle]],0)
-			
-		#self.x0_mincircle_wcs= coords_mincircle[0][0]
-		#self.y0_mincircle_wcs= coords_mincircle[0][1]
-		#self.min_radius_wcs= self.min_radius*pixSize
-
-		# - Find the rotated rectangles
-		#   NB: order the rectangle vertices such that they appear in order: top-left, top-right, bottom-right, bottom-left (in matrix coordinate system, opposite in cartesian system)
-		#self.minRect = cv.minAreaRect(self.contour)
-		#print("minRect")
-		#print(self.minRect)
-		#vertices= cv.boxPoints(self.minRect)
-
-		#vertices_ordered = perspective.order_points(vertices)
-		#print("type(vertices)")
-		#print(type(vertices))
-		#print(vertices)
-		#print(vertices_ordered)
-
-		#self.rect_center_x= self.minRect[0][0]
-		#self.rect_center_y= self.minRect[0][1]
-		#self.rect_width= self.minRect[1][0]
-		#self.rect_height= self.minRect[1][1]
-		#self.rect_theta= self.minRect[2]
-
-		#vertex_tl= (vertices_ordered[0][0],vertices_ordered[0][1])
-		#vertex_tr= (vertices_ordered[1][0],vertices_ordered[1][1])
-		#vertex_br= (vertices_ordered[2][0],vertices_ordered[2][1])
-		#vertex_bl= (vertices_ordered[3][0],vertices_ordered[3][1])
-		
-		#if self.wcs.naxis==3:
-		#	coords_tl = self.wcs.all_pix2world([[vertex_tl[0],vertex_tl[1],0]],0)
-		#	coords_tr = self.wcs.all_pix2world([[vertex_tr[0],vertex_tr[1],0]],0)
-		#	coords_br= self.wcs.all_pix2world([[vertex_br[0],vertex_br[1],0]],0)
-		#	coords_bl= self.wcs.all_pix2world([[vertex_bl[0],vertex_bl[1],0]],0)
-		#elif self.wcs.naxis==4:
-		#	coords_tl = self.wcs.all_pix2world([[vertex_tl[0],vertex_tl[1],0,0]],0)
-		#	coords_tr = self.wcs.all_pix2world([[vertex_tr[0],vertex_tr[1],0,0]],0)
-		#	coords_br= self.wcs.all_pix2world([[vertex_br[0],vertex_br[1],0,0]],0)
-		#	coords_bl= self.wcs.all_pix2world([[vertex_bl[0],vertex_bl[1],0,0]],0)
-		#else:
-		#	coords_tl = self.wcs.all_pix2world([[vertex_tl[0],vertex_tl[1]]],0)
-		#	coords_tr = self.wcs.all_pix2world([[vertex_tr[0],vertex_tr[1]]],0)
-		#	coords_br= self.wcs.all_pix2world([[vertex_br[0],vertex_br[1]]],0)
-		#	coords_bl= self.wcs.all_pix2world([[vertex_bl[0],vertex_bl[1]]],0)
-
-		#c_tl = SkyCoord(coords_tl[0][0]*u.deg, coords_tl[0][1]*u.deg, frame=cs_name)
-		#c_tr = SkyCoord(coords_tr[0][0]*u.deg, coords_tr[0][1]*u.deg, frame=cs_name)
-		#c_br = SkyCoord(coords_br[0][0]*u.deg, coords_br[0][1]*u.deg, frame=cs_name)
-		#c_bl = SkyCoord(coords_bl[0][0]*u.deg, coords_bl[0][1]*u.deg, frame=cs_name)
-		
-		#width1_wcs= c_tl.separation(c_tr).arcmin
-		#width2_wcs= c_bl.separation(c_br).arcmin
-		#height1_wcs= c_tl.separation(c_bl).arcmin
-		#height2_wcs= c_tr.separation(c_br).arcmin
-		#self.minSize_wcs= min(min(width1_wcs,width2_wcs),min(height1_wcs,height1_wcs))
-		#self.maxSize_wcs= max(max(width1_wcs,width2_wcs),max(height1_wcs,height1_wcs))
-	
-
-		# - Fill parameter dict
-		params["nPix"]= npix
-		params["X0"]= x0
-		params["Y0"]= y0
-		params["X0w"]= x0_w
-		params["Y0w"]= y0_w
-		params["X0_wcs"]= x0_wcs
-		params["Y0_wcs"]= y0_wcs
-		params["X0w_wcs"]= x0_w_wcs
-		params["Y0w_wcs"]= y0_w_wcs
-		params["Xmin"]= xmin
-		params["Xmax"]= xmax
-		params["Ymin"]= ymin
-		params["Ymax"]= ymax
-
-		params["Xmin_wcs"]= -999
-		params["Xmax_wcs"]= -999
-		params["Ymin_wcs"]= -999
-		params["Ymax_wcs"]= -999
-
-		params["S"]= S
-		params["Smin"]= Smin
-		params["Smax"]= Smax
-		params["Smean"]= Smean
-		params["Smedian"]= Smedian
-		params["Sstddev"]= Sstddev
-		if self.beamArea>0:
-			params["flux"]= S/self.beamArea
-		else:
-			params["flux"]= S
-
-		return params
 
 	####################################
 	###      CREATE TILE TASKS
@@ -1406,7 +1152,7 @@ class SFinder(object):
 
 		# - Create DS9 region objects
 		logger.info("[PROC %d] Creating DS9 regions from extracted sources ..." % self.procId)
-		self.make_ds9_regions(self.use_polygon_regions)
+		self.make_ds9_regions()
 
 		# - Write DS9 regions to file?
 		if self.write_to_ds9:
@@ -1435,7 +1181,7 @@ class SFinder(object):
 			json.dump(self.sources, fp, indent=2, sort_keys=True, cls=NumpyEncoder)
 
 
-	def make_ds9_regions(self, use_polygon=True):
+	def make_ds9_regions(self):
 		""" Make a list of DS9 regions from json results """
 
 		# - Return if called by other processor than MASTER
@@ -1478,23 +1224,9 @@ class SFinder(object):
 			
 			rmeta= regions.RegionMeta({"text": sname, "tag": tags})
 			rvisual= regions.RegionVisual({"color": color})
+			r= regions.RectanglePixelRegion(PixCoord(xc, yc), dx, dy, meta=rmeta, visual= rvisual)
 
-			# - Create one region per contour
-			vertexes= detobj['vertexes']
-			ncontours= len(vertexes)
-			for contour in vertexes:
-				vertexes_x= []
-				vertexes_y= []
-				for vertex in contour:
-					vertexes_x.append(vertex[0])
-					vertexes_y.append(vertex[1])
-
-				if use_polygon:
-					r= regions.PolygonPixelRegion(vertices=regions.PixCoord(x=vertexes_x, y=vertexes_y), meta=rmeta, visual=rvisual)
-				else:
-					r= regions.RectanglePixelRegion(xc, yc, dx, dy, meta=rmeta, visual= rvisual)
-				
-				self.sregions.append(r)
+			self.sregions.append(r)
 
 
 	def write_ds9_regions(self, outfile):
