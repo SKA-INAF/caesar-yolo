@@ -364,7 +364,7 @@ class SFinder(object):
 			
 			else:
 
-				im= Image.open(image_filename, mode='r')
+				im= Image.open(image_path, mode='r')
 				self.nx, self.ny = im.size
 
 
