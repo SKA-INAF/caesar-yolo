@@ -669,8 +669,22 @@ def generate_tiles(img_xmin, img_xmax, img_ymin, img_ymax, tileSizeX, tileSizeY,
   return tileGrid
   
   
-#def to_uint8():
-#	""" Convert image to uint """
+def to_uint8(data):
+	""" Convert image to uint """
+
+	# - Compute min & max
+	cond= np.logical_and(data!=0, np.isfinite(data))
+	data_1d= data[cond]
+	data_min= data_1d.min()
+	data_max= data_1d.max()
+	
+	# - Normalize data in 0-255
+	data_norm= (data - data_min)/(data_max - data_min) * 255
+	data_norm[~cond]= 0
+	
+	# - Convert type
+	return data_norm.as_type(np.uint8)
+	
 
 ################################
 ## CODE UTILS
