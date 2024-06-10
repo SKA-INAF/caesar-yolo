@@ -52,6 +52,9 @@ def parse_args():
 	# - DATA PRE-PROCESSING OPTIONS
 	parser.add_argument('--imgsize', dest='imgsize', required=False, type=int, default=640, help='Size in pixel used to resize input image (default=256)')
 	
+	parser.add_argument('--preprocessing', dest='preprocessing', action='store_true',help='Apply pre-processing to input image ')	
+	parser.set_defaults(preprocessing=False)
+	
 	parser.add_argument('--normalize_minmax', dest='normalize_minmax', action='store_true',help='Normalize each channel in range. Default: [0,1]')	
 	parser.set_defaults(normalize_minmax=False)
 	parser.add_argument('-norm_min', '--norm_min', dest='norm_min', required=False, type=float, default=0., action='store',help='Normalization min value (default=0)')
@@ -257,10 +260,11 @@ def main():
 	logger.info("[PROC %d] Data pre-processing steps: %s" % (procId, str(preprocess_stages)))
 	
 	dp= None
-	if not preprocess_stages:
-		logger.warn("No pre-processing steps defined ...")
-	else:
-		dp= DataPreprocessor(preprocess_stages)
+	if args.preprocessing:
+		if not preprocess_stages:
+			logger.warn("No pre-processing steps defined ...")
+		else:
+			dp= DataPreprocessor(preprocess_stages)
 
 	#===========================
 	#==   CONFIG
@@ -268,7 +272,6 @@ def main():
 	# - Override some other options
 	logger.info("Setting config options ...")
 	
-		
 	# - Set detection options
 	CONFIG['img_size']= args.imgsize
 	CONFIG['preprocess_fcn']= dp
