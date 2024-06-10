@@ -559,6 +559,9 @@ class SFinder(object):
 		if self.comm:
 			self.comm.Barrier()
 		t0= time.time()
+		
+		if self.procId==self.MASTER_ID:
+			logger.info("[PROC %d] MPI enabled? %d " % (self.procId, self.mpiEnabled))
 
 		# - Set image size parameters
 		#   NB: Executed by all PROC
