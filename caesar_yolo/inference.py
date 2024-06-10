@@ -177,7 +177,7 @@ class TileTask(object):
 
 		# - Read image
 		image_path= self.config['image_path']
-		res= addon_utils.read_fits_crop(
+		res= utils.read_fits_crop(
 			image_path, 
 			xmin= self.ix_min, xmax= self.ix_max,
 			ymin= self.iy_min, ymax= self.iy_max,
@@ -446,7 +446,7 @@ class SFinder(object):
 
 		# - Read image data
 		image_path= self.config['image_path']
-		res= addon_utils.read_fits_crop(
+		res= utils.read_fits_crop(
 			image_path, 
 			self.config['image_xmin'], self.config['image_xmax'],
 			self.config['image_ymin'], self.config['image_ymax'],
@@ -993,7 +993,7 @@ class SFinder(object):
 
 		# - Compute source mask
 		image_path= self.config['image_path']
-		res= addon_utils.read_fits_crop(
+		res= utils.read_fits_crop(
 			image_path,
 			xmin-img_offset_x, xmax+img_offset_x+1,
 			ymin-img_offset_y, ymax+img_offset_y+1,
