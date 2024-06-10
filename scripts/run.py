@@ -84,7 +84,7 @@ def parse_args():
 	parser.add_argument('-nchannels', '--nchannels', dest='nchannels', required=False, type=int, default=1, action='store',help='Number of channels (1=default). If you modify channels in preprocessing you must set this accordingly')
 	
 	# - DATA OPTIONS
- 	parser.add_argument('--image', required=False, metavar="Input image", type=str, help='Input image in FITS format to apply the model (used in detect task)')
+	parser.add_argument('--image', required=False, metavar="Input image", type=str, help='Input image in FITS format to apply the model (used in detect task)')
 	parser.add_argument('--datalist', required=False, metavar="/path/to/dataset", help='Train/test data filelist containing a list of json files')
 	parser.add_argument('--maxnimgs', required=False, metavar="", type=int, default=-1, help="Max number of images to consider in dataset (-1=all) (default=-1)")
 
