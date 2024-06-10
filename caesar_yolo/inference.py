@@ -32,6 +32,9 @@ from PIL import Image
 import regions
 from regions import PolygonPixelRegion, RectanglePixelRegion, PixCoord
 
+# - Draw modules
+import matplotlib.pyplot as plt
+
 # - caesar-yolo modules
 from caesar_yolo import logger
 from caesar_yolo import utils
