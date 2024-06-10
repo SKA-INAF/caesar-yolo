@@ -14,8 +14,8 @@ def read(fname):
 
 def get_version():
 	""" Get the package version number """
-	import mrcnn
-	return mrcnn.__version__
+	import caesar_yolo
+	return caesar_yolo.__version__
 
 
 PY_MAJOR_VERSION=sys.version_info.major
@@ -39,16 +39,16 @@ reqs.append('mpi4py')
 data_dir = 'data'
 
 setup(
-	name="mrcnn",
+	name="caesar_yolo",
 	version=get_version(),
 	author="Simone Riggi",
 	author_email="simone.riggi@gmail.com",
-	description="Tool to detect radio sources from astronomical FITS images using Mask R-CNN",
+	description="Tool to detect radio sources from astronomical FITS images using YOLO v8",
 	license = "GPL3",
-	url="https://github.com/SKA-INAF/caesar-mrcnn-tf2",
+	url="https://github.com/SKA-INAF/caesar-yolo",
 	long_description=read('README.md'),
 	packages=find_packages(),
 	include_package_data=True,
 	install_requires=reqs,
-	scripts=['scripts/run.py','scripts/split_train_test.py'],
+	scripts=['scripts/run.py'],
 )
