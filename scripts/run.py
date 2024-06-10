@@ -144,6 +144,9 @@ def parse_args():
 	parser.add_argument('--save_tile_region', dest='save_tile_region', action='store_true')	
 	parser.set_defaults(save_tile_region=False)
 	
+	parser.add_argument('--save_tile_img', dest='save_tile_img', action='store_true')	
+	parser.set_defaults(save_tile_img=False)
+	
 	args = parser.parse_args()
 
 	return args

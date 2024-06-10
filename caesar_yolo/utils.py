@@ -123,6 +123,14 @@ def get_merged_bbox(bboxes):
 ############################################################
 #  Data I/O
 ############################################################
+def write_fits(data, filename):
+	""" Read data to FITS image """
+
+	hdu= fits.PrimaryHDU(data)
+	hdul= fits.HDUList([hdu])
+	hdul.writeto(filename, overwrite=True)
+	
+		
 def read_filelist(filename):
 	""" Read filelist """
 	

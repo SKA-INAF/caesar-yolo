@@ -95,6 +95,7 @@ class TileTask(object):
 		# - Save to file
 		self.save_json= False
 		self.save_regions= False
+		self.save_img= False
 
 	def set_worker_id(self, wid):
 		""" Set worker ID for this tile task """
@@ -206,6 +207,8 @@ class TileTask(object):
 		analyzer.outfile_json= 'catalog_' + self.image_id + '_tid' + str(self.tid) + '.json'
 		analyzer.write_to_ds9= self.save_regions
 		analyzer.outfile_ds9= 'catalog_' + self.image_id + '_tid' + str(self.tid) + '.reg'
+		analyzer.save_img= self.save_img
+		analyzer.outfile_img= 'timg_' + self.image_id + '_tid' + str(self.tid) + '.reg'
 		analyzer.obj_name_tag= self.sname_tag
 
 		if analyzer.predict(self.imgdata, self.image_id, header=self.imgheader, xmin=self.ix_min, ymin=self.iy_min)<0:
@@ -324,6 +327,10 @@ class SFinder(object):
 		self.save_tile_json= config['save_tile_catalog']
 		self.write_to_json= config['save_catalog']
 		self.outfile_json= ""
+		
+		# - Save image FITS
+		self.save_tile_img= config['save_tile_img']
+		self.outfile_img= ""
 		
 		
 	def set_img_size_params(self):
@@ -992,8 +999,10 @@ class SFinder(object):
 			tileTask= TileTask(coords, self.model, self.config)
 			tileTask.set_worker_id(workerCounter)
 			tileTask.set_task_id(tid)
-			tileTask.save_regions = self.save_tile_regions
-			tileTask.save_json = self.save_tile_json
+			tileTask.save_regions= self.save_tile_regions
+			tileTask.save_json= self.save_tile_json
+			tileTask.save_img= self.save_tile_img
+			
 			self.tasks_per_worker[workerCounter].append(tileTask)
 
 			if workerCounter>=self.nproc-1: 

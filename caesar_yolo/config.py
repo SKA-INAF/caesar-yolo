@@ -41,6 +41,7 @@ CONFIG = {
 	'save_tile_region': False,
 	'outfile': '',
 	'outfile_json': '',
+	'save_tile_img': False,
 	
 	# - Save inference plot
 	'draw_plot': False,

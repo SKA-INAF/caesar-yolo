@@ -88,11 +88,13 @@ class Analyzer(object):
 		self.outfile= ""
 		self.outfile_json= ""
 		self.outfile_ds9= ""
+		self.outfile_img= ""
 		self.save_plots= config['save_plot']
 		self.draw= config['draw_plot']
 		self.draw_class_label_in_caption= config['draw_class_label_in_caption']
 		self.write_to_json= config['save_catalog']
 		self.write_to_ds9= config['save_region']
+		self.save_img= config['save_img']
 		
 		self.class_color_map= {
 			'bkg': (0,0,0),# black
@@ -161,7 +163,7 @@ class Analyzer(object):
 		logger.info("Computing model prediction (imgsz=%d, iou=%f, conf=%f) ..." % (self.config['img_size'], self.iou, self.score_thr))
 		results= self.model(
 			self.image, 
-			save=False, 
+			save=False,
 			imgsz=self.config['img_size'], 
 			conf=self.score_thr, 
 			iou=self.iou,
@@ -209,7 +211,16 @@ class Analyzer(object):
 			else:
 				outfile_ds9= self.outfile_ds9
 			self.write_ds9_regions(outfile_ds9)
-	
+			
+		# - Write image in FITS format?
+		if self.save_img:
+			logger.info("Saving image %s in FITS format ..." % str(self.image_id))
+			if self.outfile_img=="":
+				outfile_img= 'out_' + str(self.image_id) + '.fits'
+			else:
+				outfile_img= self.outfile_img
+			self.write_fits(outfile_img)
+				
 		return 0	
 			
 	
@@ -512,4 +523,10 @@ class Analyzer(object):
 			except Exception as e:
 				logger.warn("Failed to write region list to file (err=%s)!" % str(e))
 			
-	
+	def write_fits(self, outfile):
+		""" Write image in FITS file format """
+		
+		logger.info("Saving 2D image to file %s ..." % (outfile))
+		utils.write_fits(self.image[:,:,0], outfile)
+		
+		
