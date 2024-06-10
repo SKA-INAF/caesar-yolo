@@ -421,15 +421,15 @@ class Analyzer(object):
 					at_edge= True
 
 				d= {
-					"name": sname,
-					"x1": xmin + x1,
-					"x2": xmin + x2,
-					"y1": ymin + y1,
-					"y2": ymin + y2,
-					"class_id": class_id,
-					"class_name": class_name,
-					"score": score,
-					"edge": at_edge
+					"name": str(sname),
+					"x1": float(xmin + x1),
+					"x2": float(xmin + x2),
+					"y1": float(ymin + y1),
+					"y2": float(ymin + y2),
+					"class_id": int(class_id),
+					"class_name": str(class_name,)
+					"score": float(score),
+					"edge": int(at_edge)
 				}
 				self.results["objs"].append(d)
 	
