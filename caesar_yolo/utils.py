@@ -384,13 +384,15 @@ def read_fits_crop(filename, ixmin, ixmax, iymin, iymax, strip_deg_axis=False):
 	if strip_deg_axis:
 		header= strip_deg_axis_from_header(header)
 
-	print("header")
-	print(header)
+	#print("header")
+	#print(header)
 
 	# - Get WCS
-	wcs = WCS(header)
-	if wcs is None:
-		logger.warn("No WCS in input image!")
+	wcs= None
+	try:
+		wcs = WCS(header)
+	except Exception as e:
+		logger.warn("Failed to get wcs from header (err=%s)!" % (str(e)))	
 		
 	# - Close file
 	f.close()
