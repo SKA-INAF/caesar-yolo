@@ -26,6 +26,7 @@ from astropy.stats import sigma_clipped_stats
 import skimage.measure
 from skimage.measure import find_contours
 import cv2 as cv
+from PIL import Image
 
 # - Import regions module
 import regions
@@ -324,10 +325,14 @@ class SFinder(object):
 		
 		# - Read image header
 		image_path= self.config['image_path']
-		self.header= utils.get_fits_header(image_path)
-		if self.header is None:
-			logger.error("[PROC %d] Header read from image %s is None!" % (self.procId, image_path))
-			return -1
+		image_ext= os.path.splitext(image_path)[1]
+		
+		self.header= None
+		if image_ext=='.fits':
+			self.header= utils.get_fits_header(image_path)
+			if self.header is None:
+				logger.error("[PROC %d] Header read from image %s is None!" % (self.procId, image_path))
+				return -1
 
 		# - Set image size
 		xmin= self.config['image_xmin']
@@ -346,15 +351,22 @@ class SFinder(object):
 		else:
 			self.read_subimg= False
 
-			if 'NAXIS1' not in self.header:
-				logger.error("[PROC %d] NAXIS1 keyword missing in header!" % (self.procId))
-				return -1
-			if 'NAXIS2' not in self.header:
-				logger.error("[PROC %d] NAXIS2 keyword missing in header!" % (self.procId))
-				return -1
+			if image_ext=='.fits':
+				if 'NAXIS1' not in self.header:
+					logger.error("[PROC %d] NAXIS1 keyword missing in header!" % (self.procId))
+					return -1
+				if 'NAXIS2' not in self.header:
+					logger.error("[PROC %d] NAXIS2 keyword missing in header!" % (self.procId))
+					return -1
 
-			self.nx= self.header['NAXIS1']
-			self.ny= self.header['NAXIS2']
+				self.nx= self.header['NAXIS1']
+				self.ny= self.header['NAXIS2']
+			
+			else:
+
+				im= Image.open(image_filename, mode='r')
+				self.nx, self.ny = im.size
+
 
 			self.xmin= 0
 			self.xmax= self.nx-1
@@ -385,48 +397,51 @@ class SFinder(object):
 		self.image_id= img_path_base_noext
 
 		# - Compute beam area
-		compute_beam_area= True
-		self.beamArea= 0
+		if image_ext=='.fits':
+			compute_beam_area= True
+			self.beamArea= 0
 
-		if 'CDELT1' not in self.header:
-			logger.warn("[PROC %d] CDELT1 keyword missing in header!" % (self.procId))
-			compute_beam_area= False
-		else:
-			self.dX= self.header['CDELT1']
+			if 'CDELT1' not in self.header:
+				logger.warn("[PROC %d] CDELT1 keyword missing in header!" % (self.procId))
+				compute_beam_area= False
+			else:
+				self.dX= self.header['CDELT1']
 
-		if 'CDELT2' not in self.header:
-			logger.error("[PROC %d] CDELT2 keyword missing in header!" % (self.procId))
-			compute_beam_area= False	
-		else:
-			self.dY= self.header['CDELT2']
+			if 'CDELT2' not in self.header:
+				logger.error("[PROC %d] CDELT2 keyword missing in header!" % (self.procId))
+				compute_beam_area= False	
+			else:
+				self.dY= self.header['CDELT2']
 
-		if 'BMAJ' not in self.header:
-			logger.warn("[PROC %d] BMAJ keyword missing in header!" % (self.procId))
-			compute_beam_area= False
-		else:
-			self.bmaj= self.header['BMAJ']
+			if 'BMAJ' not in self.header:
+				logger.warn("[PROC %d] BMAJ keyword missing in header!" % (self.procId))
+				compute_beam_area= False
+			else:
+				self.bmaj= self.header['BMAJ']
 
-		if 'BMIN' not in self.header:
-			logger.warn("[PROC %d] BMIN keyword missing in header!" % (self.procId))
-			compute_beam_area= False
-		else:
-			self.bmin= self.header['BMIN']
+			if 'BMIN' not in self.header:
+				logger.warn("[PROC %d] BMIN keyword missing in header!" % (self.procId))
+				compute_beam_area= False
+			else:
+				self.bmin= self.header['BMIN']
 		
-		if 'BPA' not in self.header:
-			logger.warn("[PROC %d] BPA keyword missing in header!" % (self.procId))
-			compute_beam_area= False
-		else:
-			self.pa= self.header['BPA']
+			if 'BPA' not in self.header:
+				logger.warn("[PROC %d] BPA keyword missing in header!" % (self.procId))
+				compute_beam_area= False
+			else:
+				self.pa= self.header['BPA']
 		
-		if compute_beam_area:
-			self.pixelArea= np.abs(self.dX*self.dY)
-			A= np.pi*self.bmaj*self.bmin/(4*np.log(2))
-			self.beamArea= A/self.pixelArea
-			if self.procId==self.MASTER_ID:
-				logger.info("[PROC %d] Image info: beam(%f,%f,%f), beamArea=%f, dx=%f, dy=%f, pixArea=%g" % (self.procId, self.bmaj*3600, self.bmin*3600, self.pa, self.beamArea, self.dX*3600, self.dY*3600, self.pixelArea))
+			if compute_beam_area:
+				self.pixelArea= np.abs(self.dX*self.dY)
+				A= np.pi*self.bmaj*self.bmin/(4*np.log(2))
+				self.beamArea= A/self.pixelArea
+				if self.procId==self.MASTER_ID:
+					logger.info("[PROC %d] Image info: beam(%f,%f,%f), beamArea=%f, dx=%f, dy=%f, pixArea=%g" % (self.procId, self.bmaj*3600, self.bmin*3600, self.pa, self.beamArea, self.dX*3600, self.dY*3600, self.pixelArea))
 
-		# - Get WCS
-		self.wcs = WCS(self.header)
+			# - Get WCS
+			self.wcs = WCS(self.header)
+
+
 
 		return 0
 		
@@ -446,18 +461,31 @@ class SFinder(object):
 
 		# - Read image data
 		image_path= self.config['image_path']
-		res= utils.read_fits_crop(
-			image_path, 
-			self.config['image_xmin'], self.config['image_xmax'],
-			self.config['image_ymin'], self.config['image_ymax'],
-			strip_deg_axis=True
-		)
-		if res is None:
-			logger.error("Failed to read image %s!" % (image_path))
-			return -1
-			
-		image_data, header, wcs= res 
+		image_ext= os.path.splitext(image_path)[1]
+		logger.info("Reading image %s (ext=%s) ..." % (image_path, image_ext))
 		
+		if image_ext==".fits":
+			res= utils.read_fits_crop(
+				image_path, 
+				self.config['image_xmin'], self.config['image_xmax'],
+				self.config['image_ymin'], self.config['image_ymax'],
+				strip_deg_axis=True
+			)
+			if res is None:
+				logger.error("Failed to read image %s!" % (image_path))
+				return -1
+			
+			image_data, header, wcs= res 
+			
+		elif image_ext==".png" or image_ext==".jpg":
+			image_data= plt.imread(image_path)
+			header= None
+						
+		else:
+			logger.error("Unsupported image format (%s) given!" % (image_ext))
+			return -1
+		
+
 		img_fullpath= os.path.abspath(image_path)
 		img_path_base= os.path.basename(img_fullpath)
 		img_path_base_noext= os.path.splitext(img_path_base)[0]
@@ -466,7 +494,7 @@ class SFinder(object):
 		# - Apply model 
 		analyzer= Analyzer(self.model, self.config)
 		
-		if analyzer.predict(image_data, self.image_id)<0:
+		if analyzer.predict(image=image_data, image_id=self.image_id, header=header)<0:
 			logger.error("Failed to run model prediction on image %s!" % (image_path))
 			return -1
 		
