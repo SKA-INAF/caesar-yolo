@@ -339,7 +339,7 @@ class Analyzer(object):
 		ax.imshow(img)
 
 		# - Draw bounding box rect
-		for i in range(len(bboxes_sel)):
+		for i in range(len(bboxes_final)):
 			bbox= self.bboxes_final[i]
 			score= self.scores_final[i]
 			label= self.labels_final[i]
