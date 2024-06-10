@@ -224,7 +224,7 @@ class Analyzer(object):
 		bboxes_det= []
 		scores_det= []
 		labels_det= []
-		classids_det= []
+		class_ids_det= []
   
 		for result in results:
 			bboxes= result.boxes.xyxy.cpu().numpy()   # box with xywh format, (N, 4)
@@ -252,11 +252,11 @@ class Analyzer(object):
 				scores_det.append(score)
 				bboxes_det.append(bbox)
 				labels_det.append(label)
-				classids_det.append(class_id)
+				class_ids_det.append(class_id)
 				
 		self.bboxes= bboxes_det
 		self.scores= scores_det
-		self.class_ids= classids_det
+		self.class_ids= class_ids_det
 		self.labels= labels_det
   		
 		# - Find overlapped bboxes with same labels, keep only that with higher confidence
