@@ -1,0 +1,11 @@
+numpy
+numpyencoder
+future
+astropy
+fitsio
+pandas
+skimage
+Pillow
+ultralytics
+matplotlib
+mpi4py
