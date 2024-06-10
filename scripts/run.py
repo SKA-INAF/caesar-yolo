@@ -157,12 +157,6 @@ def validate_args(args):
 			logger.error("Given weight file %s not existing or not a file!" % (args.weights))
 			return -1
 		
-	# - Check remap id
-	if args.remap_classids:
-		if args.classid_remap_dict=="":
-			logger.error("Classid remap dictionary is empty (you need to provide one if you give the option --remap_classids)!")
-			return -1
-
 	return 0
 	
 	
