@@ -1211,14 +1211,18 @@ class SFinder(object):
 			# - Set region metadata
 			at_edge= detobj['edge']
 			merged= detobj['merged']
-			class_tag= '{' + class_name + '}'
+			##class_tag= '{' + class_name + '}'
+			class_tag= class_name
 
 			tags= []
 			tags.append(class_tag)
 			if at_edge:
-				tags.append('{BORDER}')
+				tags.append('BORDER')
+				##tags.append('{BORDER}')
+				
 			if merged:
-				tags.append('{MERGED}')
+				tags.append('MERGED')
+				##tags.append('{MERGED}')
 
 			color= self.class_color_map_ds9[class_name]
 			
