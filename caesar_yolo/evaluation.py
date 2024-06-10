@@ -78,6 +78,7 @@ class Analyzer(object):
 		self.obj_regions= [] # list of DS9 region objects
 
 		# - Detection process options
+		self.iou= 0.1
 		self.score_thr= config['score_thr']
 		#self.iou_thr= 0.6
 		self.merge_overlap_iou_thr_soft= config['merge_overlap_iou_thr_soft']
@@ -152,16 +153,18 @@ class Analyzer(object):
 		# - Pre-process image?
 		dp= self.config['preprocess_fcn']
 		if dp is not None:
+			logger.info("Apply pre-processing to input image ...")
 			image_proc= dp(self.image)
 			self.image= image_proc
 		
 		# - Compute model predictions
+		logger.info("Computing model prediction (imgsz=%d, iou=%f, conf=%f) ..." % (self.config['img_size'], self.iou, self.score_thr))
 		results= self.model(
 			self.image, 
 			save=False, 
 			imgsz=self.config['img_size'], 
 			conf=self.score_thr, 
-			iou=0.1,
+			iou=self.iou,
 			visualize=False,
 			show=False,
 			show_labels=False,
