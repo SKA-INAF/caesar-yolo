@@ -346,7 +346,7 @@ class Analyzer(object):
 			bbox= self.bboxes_final[i]
 			score= self.scores_final[i]
 			label= self.labels_final[i]
-			color = class_color_map[label]
+			color = self.class_color_map[label]
 			
 			# - Draw bounding box rect
 			x1= bbox[0]
