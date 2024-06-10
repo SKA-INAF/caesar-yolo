@@ -50,7 +50,7 @@ def parse_args():
 	parser = argparse.ArgumentParser(description='CAESAR-YOLO options')
 
 	# - DATA PRE-PROCESSING OPTIONS
-	parser.add_argument('--imgsize', dest='imgsize', required=False, type=int, default=256, help='Size in pixel used to resize input image (default=256)')
+	parser.add_argument('--imgsize', dest='imgsize', required=False, type=int, default=640, help='Size in pixel used to resize input image (default=256)')
 	
 	parser.add_argument('--normalize_minmax', dest='normalize_minmax', action='store_true',help='Normalize each channel in range. Default: [0,1]')	
 	parser.set_defaults(normalize_minmax=False)
@@ -89,7 +89,7 @@ def parse_args():
 	parser.add_argument('--maxnimgs', required=False, metavar="", type=int, default=-1, help="Max number of images to consider in dataset (-1=all) (default=-1)")
 
 	# - MODEL OPTIONS
-	parser.add_argument('--weights', required=False, metavar="/path/to/weights.h5", help="Path to weights .h5 file")
+	parser.add_argument('--weights', required=True, metavar="/path/to/weights.h5", help="Path to weights .h5 file")
 	
 	# - DETECT OPTIONS
 	parser.add_argument('--scoreThr', required=False, default=0.7, type=float, metavar="Object detection score threshold to be used during test",help="Object detection score threshold to be used during test")
@@ -300,7 +300,7 @@ def main():
 	#===========================
 	# - Creating the model
 	logger.info("[PROC %d] Creating YOLO model, loading weights from file %s ..." % (procId, weights_path))
-	model = YOLO(model_weights)
+	model = YOLO(weights_path)
 		
 	#===========================
 	#==   RUN
