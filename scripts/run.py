@@ -134,7 +134,7 @@ def validate_args(args):
 	# - Check image arg
 	has_image= (args.image and args.image!="")
 	image_exists= os.path.isfile(args.image)
-	valid_extension= args.image.endswith('.fits')
+	valid_extension= args.image.endswith('.fits') or args.image.endswith('.png') or args.image.endswith('.jpg')
 	if not has_image:
 		logger.error("Argument --image is required for detect task!")
 		return -1
@@ -142,7 +142,7 @@ def validate_args(args):
 		logger.error("Image argument must be an existing image on filesystem!")
 		return -1
 	if not valid_extension:
-		logger.error("Image must have .fits extension!")
+		logger.error("Image must have .fits/.png/.jpg extension!")
 		return -1
 
 	# - Check maxnimgs
