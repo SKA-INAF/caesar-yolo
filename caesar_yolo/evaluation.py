@@ -427,7 +427,7 @@ class Analyzer(object):
 					"y1": float(ymin + y1),
 					"y2": float(ymin + y2),
 					"class_id": int(class_id),
-					"class_name": str(class_name,)
+					"class_name": str(class_name),
 					"score": float(score),
 					"edge": int(at_edge)
 				}
