@@ -501,7 +501,7 @@ class Analyzer(object):
 
 		# - Write to file
 		try:
-			regs_out= regions.Regions(regions=self.obj_regions)
+			regs_out= regions.Regions(self.obj_regions)
 			regs_out.write(filename=outfile, format='ds9', overwrite=True) # available for version >=0.5
 		except Exception as e:
 			try:	
