@@ -503,9 +503,9 @@ class Analyzer(object):
 		try:
 			regs_out= regions.Regions(regions=self.obj_regions)
 			regs_out.write(filename=outfile, format='ds9', overwrite=True) # available for version >=0.5
-		except:
+		except Exception as e:
 			try:	
-				logger.info("Failed to write region list to file, retrying with write_ds9 (<0.5 regions API) ...")
+				logger.warn("Failed to write region list to file (err=%s), retrying with write_ds9 (<0.5 regions API) ..." % (str(e)))
 				regions.write_ds9(regions=self.obj_regions, filename=outfile, coordsys='image') # this is to be used for versions <0.5 (deprecated in v0.5)
 			except Exception as e:
 				logger.warn("Failed to write region list to file (err=%s)!" % str(e))
