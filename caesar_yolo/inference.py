@@ -846,7 +846,7 @@ class SFinder(object):
 				classId_merged= source_largest["class_id"]
 
 				# - Compute new bbox (merge of individual bboxes)
-				bbox_merged= utils.get_merged_bbox()
+				bbox_merged= utils.get_merged_bbox(bboxes_to_be_merged)
 				x1_merged= bbox_merged[0]
 				y1_merged= bbox_merged[1]
 				x2_merged= bbox_merged[2]
