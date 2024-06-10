@@ -245,7 +245,7 @@ class Analyzer(object):
 				score= scores[i]
 				bbox= bboxes[i]
 				label= class_labels[i]
-				class_id= int(item)
+				class_id= int(cls[i])
 				
 				if score<self.score_thr:
 					continue
