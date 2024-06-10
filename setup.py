@@ -33,6 +33,7 @@ reqs.append('scikit-image')
 reqs.append('Pillow')
 reqs.append('ultralytics')
 reqs.append('matplotlib')
+reqs.append('regions')
 reqs.append('mpi4py')
 
 

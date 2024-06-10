@@ -8,4 +8,5 @@ scikit-image
 Pillow
 ultralytics
 matplotlib
+regions
 mpi4py
