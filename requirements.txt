@@ -4,7 +4,7 @@ future
 astropy
 fitsio
 pandas
-skimage
+scikit-image
 Pillow
 ultralytics
 matplotlib
