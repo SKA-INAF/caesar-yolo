@@ -379,6 +379,9 @@ def read_fits_crop(filename, ixmin, ixmax, iymin, iymax, strip_deg_axis=False):
 	if strip_deg_axis:
 		header= strip_deg_axis_from_header(header)
 
+	print("header")
+	print(header)
+
 	# - Get WCS
 	wcs = WCS(header)
 	if wcs is None:
