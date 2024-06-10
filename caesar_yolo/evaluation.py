@@ -196,7 +196,7 @@ class Analyzer(object):
 			self.write_json_results(outfile_json)
 
 		# - Create DS9 region objects
-		self.make_ds9_regions(self.use_polygon_regions)
+		self.make_ds9_regions()
 
 		# - Write DS9 regions to file?
 		if self.write_to_ds9:
@@ -446,7 +446,7 @@ class Analyzer(object):
 	# ====================================
 	# ==   WRITE RESULTS IN DS9 FORMAT
 	# ====================================
-	def make_ds9_regions(self, use_polygon=True):
+	def make_ds9_regions(self):
 		""" Make a list of DS9 regions from json results """
 
 		# - Check if result dictionary was created
