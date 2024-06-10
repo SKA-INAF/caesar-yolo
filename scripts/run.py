@@ -322,6 +322,7 @@ def main():
 	CONFIG['save_plot']= args.save_plots
 	CONFIG['save_tile_catalog']= args.save_tile_catalog
 	CONFIG['save_tile_region']= args.save_tile_region
+	CONFIG['save_tile_img']= args.save_tile_img
 	
 	logger.info("[PROC %d] Config options: %s" % (procId, str(CONFIG)))
 
