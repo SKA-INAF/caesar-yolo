@@ -138,11 +138,6 @@ class Analyzer(object):
 		if header:
 			self.image_header= header
 			
-		# - Pre-process image?
-		dp= self.config['preprocess_fcn']
-		if dp is not None:
-			self.image= dp(image)
-			
 		# - Convert to 3 channel format
 		nchans= self.image.ndim
 		img_shape= self.image.shape
@@ -153,6 +148,11 @@ class Analyzer(object):
 			image_cube[:,:,1]= self.image
 			image_cube[:,:,2]= self.image
 			self.image= image_cube
+			
+		# - Pre-process image?
+		dp= self.config['preprocess_fcn']
+		if dp is not None:
+			self.image= dp(image)
 		
 		# - Compute model predictions
 		results= self.model(
