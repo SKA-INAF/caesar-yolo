@@ -466,7 +466,7 @@ class SFinder(object):
 		# - Apply model 
 		analyzer= Analyzer(self.model, self.config)
 		
-		if analyzer.predict(image_data, image_id)<0:
+		if analyzer.predict(image_data, self.image_id)<0:
 			logger.error("Failed to run model prediction on image %s!" % (image_path))
 			return -1
 		
