@@ -144,14 +144,14 @@ class Analyzer(object):
 			self.image= dp(image)
 			
 		# - Convert to 3 channel format
-		nchans= image_processed.ndim
-		img_shape= image_processed.shape
+		nchans= self.image.ndim
+		img_shape= self.image.shape
 		if nchans!=3:
 			logger.info("Converting image (nchan=%d) to 3 channels ..." % (nchans))
 			image_cube= np.zeros((img_shape[0], img_shape[1], 3))
-			image_cube[:,:,0]= image_processed
-			image_cube[:,:,1]= image_processed
-			image_cube[:,:,2]= image_processed
+			image_cube[:,:,0]= self.image
+			image_cube[:,:,1]= self.image
+			image_cube[:,:,2]= self.image
 			self.image= image_cube
 		
 		# - Compute model predictions
