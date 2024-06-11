@@ -108,10 +108,11 @@ def parse_args():
 
 	# - MODEL OPTIONS
 	parser.add_argument('--weights', required=True, metavar="/path/to/weights.h5", help="Path to weights .h5 file")
+	parser.add_argument('--device', required=False, type=str, default="cpu", metavar="Specifies the device for inference (e.g., cpu, cuda:0 or 0).", help="Specifies the device for inference (e.g., cpu, cuda:0 or 0).")
 	
 	# - DETECT OPTIONS
 	parser.add_argument('--scoreThr', required=False, default=0.7, type=float, metavar="Object detection score threshold to be used during test",help="Object detection score threshold to be used during test")
-	#parser.add_argument('--iouThr', required=False, default=0.6, type=float, metavar="IOU threshold used to match detected objects with true objects",help="IOU threshold used to match detected objects with true objects")
+	parser.add_argument('--iouThr', required=False, default=0.5, type=float, metavar="Intersection Over Union (IoU) threshold for Non-Maximum Suppression (NMS).",help="Intersection Over Union (IoU) threshold for Non-Maximum Suppression (NMS)")
 	parser.add_argument('--merge_overlap_iou_thr_soft', required=False, default=0.3, type=float, metavar="IOU threshold used to merge overlapping detected objects with same class",help="IOU threshold used to merge overlapping detected objects with same class")
 	parser.add_argument('--merge_overlap_iou_thr_hard', required=False, default=0.8, type=float, metavar="IOU threshold used to merge overlapping detected objects",help="IOU threshold used to merge overlapping detected objects")
 	
@@ -311,7 +312,8 @@ def main():
 	CONFIG['tile_ysize']= args.tile_ysize
 	CONFIG['tile_xstep']= args.tile_xstep
 	CONFIG['tile_ystep']= args.tile_ystep
-	#CONFIG['iou_thr']= args.iouThr
+	CONFIG['device']= args.device
+	CONFIG['iou_thr']= args.iouThr
 	CONFIG['score_thr']= args.scoreThr
 	CONFIG['merge_overlap_iou_thr_soft']= args.merge_overlap_iou_thr_soft
 	CONFIG['merge_overlap_iou_thr_hard']= args.merge_overlap_iou_thr_hard	
