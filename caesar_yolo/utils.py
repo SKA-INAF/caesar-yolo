@@ -389,7 +389,7 @@ def read_fits_crop(filename, ixmin, ixmax, iymin, iymax, strip_deg_axis=False):
 	header = f[hdu_id].read_header()
 	
 	# - Strip degenerate axis
-	if strip_deg_axis:
+	if strip_deg_axis and header is not None:
 		header= strip_deg_axis_from_header(header)
 
 	#print("header")
