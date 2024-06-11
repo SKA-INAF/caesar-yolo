@@ -130,6 +130,7 @@ def parse_args():
 	parser.add_argument('--tile_ysize', dest='tile_ysize', required=False, type=int, default=512, help='Sub image size in pixel along y') 
 	parser.add_argument('--tile_xstep', dest='tile_xstep', required=False, type=float, default=1.0, help='Sub image step fraction along x (=1 means no overlap)') 
 	parser.add_argument('--tile_ystep', dest='tile_ystep', required=False, type=float, default=1.0, help='Sub image step fraction along y (=1 means no overlap)') 
+	parser.add_argument('--max_ntasks_per_worker', dest='max_ntasks_per_worker', required=False, type=int, default=100, help='Max number of tasks assigned to a MPI processor worker') 
 
 	# - DRAW OPTIONS
 	parser.add_argument('--draw_plots', dest='draw_plots', action='store_true')	
@@ -312,6 +313,7 @@ def main():
 	CONFIG['tile_ysize']= args.tile_ysize
 	CONFIG['tile_xstep']= args.tile_xstep
 	CONFIG['tile_ystep']= args.tile_ystep
+	CONFIG['max_ntasks_per_worker']= args.max_ntasks_per_worker
 	CONFIG['device']= args.device
 	CONFIG['iou_thr']= args.iouThr
 	CONFIG['score_thr']= args.scoreThr
