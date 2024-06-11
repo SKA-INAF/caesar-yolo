@@ -123,10 +123,13 @@ def get_merged_bbox(bboxes):
 ############################################################
 #  Data I/O
 ############################################################
-def write_fits(data, header, filename):
+def write_fits(data, filename, header=None):
 	""" Read data to FITS image """
 
-	hdu= fits.PrimaryHDU(data, header)
+	if header is not None:
+		hdu= fits.PrimaryHDU(data, header)
+	else:
+		hdu= fits.PrimaryHDU(data)
 	hdul= fits.HDUList([hdu])
 	hdul.writeto(filename, overwrite=True)
 	
