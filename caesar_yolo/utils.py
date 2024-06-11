@@ -219,9 +219,14 @@ def read_fits(filename, strip_deg_axis=False):
 	header= hdu[0].header
 
 	# - Strip degenerate axis
-	if strip_deg_axis:
-		header= strip_deg_axis_from_header(header)
-
+	if strip_deg_axis and header is not None:
+		try:
+			header= strip_deg_axis_from_header(header)
+		except Exception as e:
+			logger.warn("Failed to strip keywords from FITS header (err=%s)..." % (str(e)))
+			print("header")
+			print(header)
+			
 	# - Get WCS
 	wcs= None
 	try:
@@ -390,10 +395,12 @@ def read_fits_crop(filename, ixmin, ixmax, iymin, iymax, strip_deg_axis=False):
 	
 	# - Strip degenerate axis
 	if strip_deg_axis and header is not None:
-		header= strip_deg_axis_from_header(header)
-
-	#print("header")
-	#print(header)
+		try:
+			header= strip_deg_axis_from_header(header)
+		except Exception as e:
+			logger.warn("Failed to strip keywords from FITS header (err=%s)..." % (str(e)))
+			print("header")
+			print(header)
 
 	# - Get WCS
 	wcs= None
