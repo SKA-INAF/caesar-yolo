@@ -159,22 +159,33 @@ class Analyzer(object):
 			logger.info("Apply pre-processing to input image ...")
 			image_proc= dp(self.image)
 			self.image= image_proc
+			
+		# - Check input image
+		if self.image is None:
+			logger.warn("Input image is None, no prediction made.")
+			return -1
+			
+		
 		
 		# - Compute model predictions
 		logger.info("Computing model prediction (imgsz=%d, iou=%f, conf=%f) ..." % (self.imgsize, self.iou_thr, self.score_thr))
-		results= self.model(
-			self.image, 
-			save=False,
-			device=self.device,
-			imgsz=self.imgsize,
-			conf=self.score_thr, 
-			iou=self.iou_thr,
-			visualize=False,
-			show=False,
-			show_labels=False,
-			show_conf=False,
-			show_boxes=False
-		)
+		try:
+			results= self.model(
+				self.image, 
+				save=False,
+				device=self.device,
+				imgsz=self.imgsize,
+				conf=self.score_thr, 
+				iou=self.iou_thr,
+				visualize=False,
+				show=False,
+				show_labels=False,
+				show_conf=False,
+				show_boxes=False
+			)
+		except Exception as e:
+			logger.warn("Model prediction failed (err=%s)..." % (str(e)))
+			return -1
 		
 		# - Process predictions
 		if self.process_detections(results)<0:
