@@ -207,9 +207,12 @@ class TileTask(object):
 		if self.config['use_multi_gpu'] and ndevices>1:
 			if self.nproc<=ndevices:# set device to same MPI process ID
 				device= self.config['devices'][self.procId]
+				logger.info("[PROC %d] Setting device for task %d to same proc id (device=%s) ..." % (self.procId, self.tid, device))
+		
 			else: # set device to a random GPU
 				rand_index= random.randint(0, ndevices-1)
 				device= self.config['devices'][rand_index]
+				logger.info("[PROC %d] Setting device for task %d to a random device among given device list (index=%d, device=%s) ..." % (self.procId, self.tid, rand_index, device))
 		
 		logger.info("[PROC %d] Selected device %s for task %d..." % (self.procId, device, self.tid))
 
