@@ -227,8 +227,8 @@ def read_fits(filename, strip_deg_axis=False):
 			header= strip_deg_axis_from_header(header)
 		except Exception as e:
 			logger.warn("Failed to strip keywords from FITS header (err=%s)..." % (str(e)))
-			print("header")
-			print(header)
+			#print("header")
+			#print(header)
 			
 	# - Get WCS
 	wcs= None
@@ -402,8 +402,8 @@ def read_fits_crop(filename, ixmin, ixmax, iymin, iymax, strip_deg_axis=False):
 			header= strip_deg_axis_from_header(header)
 		except Exception as e:
 			logger.warn("Failed to strip keywords from FITS header (err=%s)..." % (str(e)))
-			print("header")
-			print(header)
+			#print("header")
+			#print(header)
 
 	# - Get WCS
 	wcs= None
