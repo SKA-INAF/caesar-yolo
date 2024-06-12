@@ -79,7 +79,7 @@ class Analyzer(object):
 
 		# - Detection process options
 		self.imgsize= config['img_size']
-		self.device= config['device']
+		self.device= config['devices'][0]
 		self.iou_thr= config['iou_thr']
 		self.score_thr= config['score_thr']
 		self.merge_overlap_iou_thr_soft= config['merge_overlap_iou_thr_soft']

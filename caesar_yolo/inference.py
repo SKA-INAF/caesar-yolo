@@ -198,9 +198,24 @@ class TileTask(object):
 			return -1
 
 		self.imgdata, self.imgheader, wcs= res
+		
+		# - Set device used for inference. 
+		#   By default it is set to setting used in config.
+		#   If set_device_to_mpi_proc
+		device= self.config['devices'][0]
+		ndevices= len(self.config['devices'])
+		if self.config['use_multi_gpu'] and ndevices>1:
+			if self.nproc<=ndevices:# set device to same MPI process ID
+				device= self.config['devices'][self.procId]
+			else: # set device to a random GPU
+				rand_index= random.randint(0, ndevices-1)
+				device= self.config['devices'][rand_index]
+		
+		logger.info("[PROC %d] Selected device %s for task %d..." % (self.procId, device, self.tid))
 
 		# - Apply model
 		analyzer= Analyzer(self.model, self.config)
+		analyzer.device= device
 		analyzer.draw= False
 		analyzer.outfile= self.config['outfile']
 		analyzer.write_to_json= self.save_json

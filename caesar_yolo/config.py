@@ -29,7 +29,8 @@ CONFIG = {
 	'max_ntasks_per_worker': 100,
 
 	# - Source detection options
-	'device': 'cpu',
+	'devices': ['cpu'],
+	'use_multi_gpu': False,
 	'iou_thr': 0.5,
 	'merge_overlap_iou_thr_soft': 0.3,
 	'merge_overlap_iou_thr_hard': 0.8,

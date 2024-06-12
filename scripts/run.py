@@ -108,7 +108,9 @@ def parse_args():
 
 	# - MODEL OPTIONS
 	parser.add_argument('--weights', required=True, metavar="/path/to/weights.h5", help="Path to weights .h5 file")
-	parser.add_argument('--device', required=False, type=str, default="cpu", metavar="Specifies the device for inference (e.g., cpu, cuda:0 or 0).", help="Specifies the device for inference (e.g., cpu, cuda:0 or 0).")
+	parser.add_argument('--devices', required=False, type=str, default="cpu", metavar="Specifies the device for inference (e.g., cpu, cuda:0).", help="Specifies the device for inference (e.g., cpu, cuda:0 or 0).")
+	parser.add_argument('--use_multi_gpu', dest='use_multi_gpu', action='store_true')	
+	parser.set_defaults(use_multi_gpu=False)
 	
 	# - DETECT OPTIONS
 	parser.add_argument('--scoreThr', required=False, default=0.7, type=float, metavar="Object detection score threshold to be used during test",help="Object detection score threshold to be used during test")
@@ -258,6 +260,12 @@ def main():
 	if args.weights!="":
 		weights_path= args.weights
 		
+	# - Set device option
+	devices= [str(x) for x in args.devices.split(',')]
+	if not devices:
+		logger.error("Empty list of devices for inference, at least one must be given!")
+		return 1
+		
 	#==============================
 	#==   DEFINE PRE-PROCESSOR
 	#==============================
@@ -314,7 +322,8 @@ def main():
 	CONFIG['tile_xstep']= args.tile_xstep
 	CONFIG['tile_ystep']= args.tile_ystep
 	CONFIG['max_ntasks_per_worker']= args.max_ntasks_per_worker
-	CONFIG['device']= args.device
+	CONFIG['devices']= args.devices
+	CONFIG['use_multi_gpu']= args.use_multi_gpu
 	CONFIG['iou_thr']= args.iouThr
 	CONFIG['score_thr']= args.scoreThr
 	CONFIG['merge_overlap_iou_thr_soft']= args.merge_overlap_iou_thr_soft
