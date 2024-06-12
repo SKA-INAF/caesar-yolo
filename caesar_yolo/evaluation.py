@@ -168,8 +168,8 @@ class Analyzer(object):
 		nchans= self.image.ndim
 		img_shape= self.image.shape		
 		for i in range(img_shape[-1]):
-			img_min= min(self.image(:,:,i))
-			img_max= max(self.image(:,:,i))
+			img_min= min(self.image[:,:,i])
+			img_max= max(self.image[:,:,i])
 			if img_min==img_max:
 				logger.warn("Input image (ch %d) pixels have the same value (%f), no prediction made." % (i+1, img_max))
 				return -1
