@@ -160,12 +160,19 @@ class Analyzer(object):
 			image_proc= dp(self.image)
 			self.image= image_proc
 			
-		# - Check input image
+		# - Check input image (None, channels with equal values)
 		if self.image is None:
 			logger.warn("Input image is None, no prediction made.")
 			return -1
-			
 		
+		nchans= self.image.ndim
+		img_shape= self.image.shape		
+		for i in range(img_shape[-1]):
+			img_min= min(self.image(:,:,i))
+			img_max= max(self.image(:,:,i))
+			if img_min==img_max:
+				logger.warn("Input image (ch %d) pixels have the same value (%f), no prediction made." % (i+1, img_max))
+				return -1
 		
 		# - Compute model predictions
 		logger.info("Computing model prediction (imgsz=%d, iou=%f, conf=%f) ..." % (self.imgsize, self.iou_thr, self.score_thr))
