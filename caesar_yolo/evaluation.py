@@ -166,7 +166,10 @@ class Analyzer(object):
 			return -1
 		
 		nchans= self.image.ndim
-		img_shape= self.image.shape		
+		img_shape= self.image.shape
+		print("img_shape")
+		print(img_shape)
+		
 		for i in range(img_shape[-1]):
 			img_min= min(self.image[:,:,i])
 			img_max= max(self.image[:,:,i])
