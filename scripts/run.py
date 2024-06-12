@@ -265,8 +265,6 @@ def main():
 	if not devices:
 		logger.error("Empty list of devices for inference, at least one must be given!")
 		return 1
-	print("devices")
-	print(devices)
 		
 	#==============================
 	#==   DEFINE PRE-PROCESSOR
