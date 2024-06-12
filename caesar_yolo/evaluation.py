@@ -171,8 +171,8 @@ class Analyzer(object):
 		print(img_shape)
 		
 		for i in range(img_shape[-1]):
-			img_min= min(self.image[:,:,i])
-			img_max= max(self.image[:,:,i])
+			img_min= np.min(self.image[i])
+			img_max= np.max(self.image[i])
 			print("img_min")
 			print(img_min)
 			print("img_max")
