@@ -433,7 +433,10 @@ class Analyzer(object):
 		if self.bboxes_final:
 			for i in range(len(self.bboxes_final)):
 				# - Get detection info
-				sname= 'S' + str(i+1) + "_" + self.obj_name_tag
+				if self.obj_name_tag=="":
+					sname= 'S' + str(i+1)
+				else:
+					sname= 'S' + str(i+1) + "_" + self.obj_name_tag
 				class_id= self.class_ids_final[i]
 				class_name= self.labels_final[i]
 				###y1, x1, y2, x2 = self.bboxes_final[i]
