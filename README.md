@@ -2,7 +2,9 @@
 Radio source detection with YOLO object detector
 
 ## **Credit**
-This software is distributed with GPLv3 license. If you use it for your research, please add repository link or acknowledge authors in your papers.   
+This software is distributed with GPLv3 license. If you use it for your research, please add a reference to this github repository and acknowledge these works in your paper:   
+
+* S. Riggi et al., *Astronomical source detection in radio continuum maps with deep neural networks*, 2023, Astronomy and Computing, 42, 100682, [doi](https://doi.org/10.1016/j.ascom.2022.100682)    
 
 ## **Installation**  
 
