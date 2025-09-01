@@ -2,7 +2,7 @@
 Radio source detection with YOLO object detector
 
 ## **Status**
-This software is under development and supported only on python 3 + tensorflow 1x. 
+This software is under development and supported only on python 3. 
 
 ## **Credit**
 This software is distributed with GPLv3 license. If you use it for your research, please add repository link or acknowledge authors in your papers.   
