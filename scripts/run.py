@@ -61,11 +61,16 @@ def parse_args():
 	# - Parse command line arguments
 	parser = argparse.ArgumentParser(description='CAESAR-YOLO options')
 
+	# - DATA OPTIONS
+	parser.add_argument('--image', required=False, metavar="Input image", type=str, help='Input image in FITS format to apply the model (used in detect task)')
+	parser.add_argument('--datalist', required=False, metavar="/path/to/dataset", help='Train/test data filelist containing a list of json files')
+	parser.add_argument('--maxnimgs', required=False, metavar="", type=int, default=-1, help="Max number of images to consider in dataset (-1=all) (default=-1)")
+
+	# - MODEL OPTIONS
+	parser.add_argument('--weights', required=True, metavar="/path/to/weights.h5", help="Path to weights .h5 file")
+	
 	# - DATA PRE-PROCESSING OPTIONS
 	parser.add_argument('--imgsize', dest='imgsize', required=False, type=int, default=640, help='Size in pixel used to resize input image (default=640)')
-	
-	#parser.add_argument('--to_uint', dest='to_uint', action='store_true',help='Convert input image to uint ')	
-	#parser.set_defaults(to_uint=False)
 	
 	parser.add_argument('--preprocessing', dest='preprocessing', action='store_true',help='Apply pre-processing to input image ')	
 	parser.set_defaults(preprocessing=False)
@@ -101,30 +106,17 @@ def parse_args():
 	parser.add_argument('-sigma_clip_baseline', '--sigma_clip_baseline', dest='sigma_clip_baseline', required=False, type=float, default=0, action='store',help='Lower sigma threshold to be used for clipping pixels below (mean-sigma_low*stddev) in first channel of 3-channel preprocessing (default=0)')
 	parser.add_argument('-nchannels', '--nchannels', dest='nchannels', required=False, type=int, default=1, action='store',help='Number of channels (1=default). If you modify channels in preprocessing you must set this accordingly')
 	
-	# - DATA OPTIONS
-	parser.add_argument('--image', required=False, metavar="Input image", type=str, help='Input image in FITS format to apply the model (used in detect task)')
-	parser.add_argument('--datalist', required=False, metavar="/path/to/dataset", help='Train/test data filelist containing a list of json files')
-	parser.add_argument('--maxnimgs', required=False, metavar="", type=int, default=-1, help="Max number of images to consider in dataset (-1=all) (default=-1)")
-
-	# - MODEL OPTIONS
-	parser.add_argument('--weights', required=True, metavar="/path/to/weights.h5", help="Path to weights .h5 file")
-	parser.add_argument('--devices', required=False, type=str, default="cpu", metavar="Specifies the device for inference (e.g., cpu, cuda:0).", help="Specifies the device for inference (e.g., cpu, cuda:0 or 0).")
-	parser.add_argument('--multigpu', dest='multigpu', action='store_true')	
-	parser.set_defaults(multigpu=False)
-	
 	# - DETECT OPTIONS
 	parser.add_argument('--scoreThr', required=False, default=0.7, type=float, metavar="Object detection score threshold to be used during test",help="Object detection score threshold to be used during test")
 	parser.add_argument('--iouThr', required=False, default=0.5, type=float, metavar="Intersection Over Union (IoU) threshold for Non-Maximum Suppression (NMS).",help="Intersection Over Union (IoU) threshold for Non-Maximum Suppression (NMS)")
 	parser.add_argument('--merge_overlap_iou_thr_soft', required=False, default=0.3, type=float, metavar="IOU threshold used to merge overlapping detected objects with same class",help="IOU threshold used to merge overlapping detected objects with same class")
-	parser.add_argument('--merge_overlap_iou_thr_hard', required=False, default=0.8, type=float, metavar="IOU threshold used to merge overlapping detected objects",help="IOU threshold used to merge overlapping detected objects")
+	parser.add_argument('--merge_overlap_iou_thr_hard', required=False, default=0.8, type=float, metavar="IOU threshold used to merge overlapping detected objects, even those with same class",help="IOU threshold used to merge overlapping detected objects")
 	
 	parser.add_argument('--xmin', dest='xmin', required=False, type=int, default=-1, help='Image min x to be read (read all if -1)') 
 	parser.add_argument('--xmax', dest='xmax', required=False, type=int, default=-1, help='Image max x to be read (read all if -1)') 
 	parser.add_argument('--ymin', dest='ymin', required=False, type=int, default=-1, help='Image min y to be read (read all if -1)') 
 	parser.add_argument('--ymax', dest='ymax', required=False, type=int, default=-1, help='Image max y to be read (read all if -1)') 
-	parser.add_argument('--detect_outfile', required=False, metavar="Output plot filename", type=str, default="", help='Output plot PNG filename (internally generated if left empty)')
-	parser.add_argument('--detect_outfile_json', required=False, metavar="Output json filename with detected objects", type=str, default="", help='Output json filename with detected objects (internally generated if left empty)')
-
+	
 	# - PARALLEL PROCESSING OPTIONS
 	parser.add_argument('--split_img_in_tiles', dest='split_img_in_tiles', action='store_true')	
 	parser.set_defaults(split_img_in_tiles=False)
@@ -133,6 +125,11 @@ def parse_args():
 	parser.add_argument('--tile_xstep', dest='tile_xstep', required=False, type=float, default=1.0, help='Sub image step fraction along x (=1 means no overlap)') 
 	parser.add_argument('--tile_ystep', dest='tile_ystep', required=False, type=float, default=1.0, help='Sub image step fraction along y (=1 means no overlap)') 
 	parser.add_argument('--max_ntasks_per_worker', dest='max_ntasks_per_worker', required=False, type=int, default=100, help='Max number of tasks assigned to a MPI processor worker') 
+
+	# - RUN OPTIONS
+	parser.add_argument('--devices', required=False, type=str, default="cpu", metavar="Specifies the device for inference (e.g., cpu, cuda:0).", help="Specifies the device for inference (e.g., cpu, cuda:0 or 0).")
+	parser.add_argument('--multigpu', dest='multigpu', action='store_true')	
+	parser.set_defaults(multigpu=False)
 
 	# - DRAW OPTIONS
 	parser.add_argument('--draw_plots', dest='draw_plots', action='store_true')	
@@ -149,6 +146,9 @@ def parse_args():
 	parser.set_defaults(save_tile_region=False)
 	parser.add_argument('--save_tile_img', dest='save_tile_img', action='store_true')	
 	parser.set_defaults(save_tile_img=False)
+	parser.add_argument('--detect_outfile', required=False, metavar="Output plot filename", type=str, default="", help='Output plot PNG filename (internally generated if left empty)')
+	parser.add_argument('--detect_outfile_json', required=False, metavar="Output json filename with detected objects", type=str, default="", help='Output json filename with detected objects (internally generated if left empty)')
+
 	
 	args = parser.parse_args()
 
