@@ -150,7 +150,18 @@ mpirun -np 4 python $SCRIPT_DIR/run.py --image=$INPUTFILE --weights=$WEIGHTFILE 
 ```
 
 ## **Pre-trained models**  
-We have trained various YOLO v8 models from scratch on the same annotated radio dataset that was previously used to train Mask R-CNN model in paper Riggi+2023 (see Credits for full reference). We provide below the training configuration and links to pre-trained model weights.
+We have trained various YOLO v8 models from scratch on the same annotated radio dataset that was previously used to train Mask R-CNN model in paper Riggi+2023 (see Credits for full reference). 
+Models were trained to detect 5 classes of radio objects:   
+
+0: `spurious`
+1: `compact`
+2: `extended`
+3: `extended-multisland`
+4: `flagged`
+
+See the original publication for a description of each class.
+
+We provide below the training configuration we used for producing the models and links to pre-trained model weights.
 
 **Training configuration**
 * epochs=300
