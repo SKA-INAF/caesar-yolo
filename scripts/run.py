@@ -62,7 +62,7 @@ def parse_args():
 	parser = argparse.ArgumentParser(description='CAESAR-YOLO options')
 
 	# - DATA PRE-PROCESSING OPTIONS
-	parser.add_argument('--imgsize', dest='imgsize', required=False, type=int, default=640, help='Size in pixel used to resize input image (default=256)')
+	parser.add_argument('--imgsize', dest='imgsize', required=False, type=int, default=640, help='Size in pixel used to resize input image (default=640)')
 	
 	#parser.add_argument('--to_uint', dest='to_uint', action='store_true',help='Convert input image to uint ')	
 	#parser.set_defaults(to_uint=False)
