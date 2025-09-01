@@ -31,15 +31,19 @@ To detect source objects in input images use the the provided script ```run.py``
 
 Supported options are:  
 
-*INPUT DATA*  
+**INPUT DATA**  
 	`--image=[VALUE]`: Path to input image in FITS format   
  	`--datalist=[VALUE]`: Path to input data filelist containing a list of json files   
  	`--maxnimgs=[VALUE]`: Max number of images to consider in dataset (-1=all). Default: -1   
- 
-*MODEL*  
+  	`--xmin=[VALUE]`: Image min x to be read (read all if -1). Default: -1   
+  	`--xmax=[VALUE]`: Image max x to be read (read all if -1). Default: -1   
+  	`--ymin=[VALUE]`: Image min y to be read (read all if -1). Default: -1   
+  	`--ymax=[VALUE]`: Image max y to be read (read all if -1). Default: -1   	
+  
+**MODEL**  
 	`--weights=[VALUE]`: Path to model weight file (.pt). This option is **mandatory**    
  
-*DATA PRE-PROCESSING*     
+**DATA PRE-PROCESSING**     
   `--preprocessing`: Enable image pre-processing. Default: disabled   
   `--imgsize=[SIZE]`: Size in pixel used to resize input image. Default: 640     
   `--normalize_minmax`: Normalize each channel in range [norm_min, norm_max]. Default: no normalization    
@@ -61,8 +65,33 @@ Supported options are:
   `--chan3_preproc`: Use the 3-channel pre-processor. Default: not used          
   `--sigma_clip_baseline=[VALUE]`: Lower sigma threshold to be used for clipping pixels below (mean - sigma_low x stddev) in first channel of 3-channel preprocessing. Default: 0.0         
   `--nchannels=[VALUE]`: Number of channels. If you modify channels in preprocessing you must set this option accordingly. Default: 1        
-	
-*RUN*  
+
+**SOURCE DETECTION**    
+	`--scoreThr=[VALUE]`: Object detection score threshold, below which objects are not considered as sources. Default: 0.7       
+	`--iouThr=[VALUE]`: Intersection Over Union (IoU) threshold for Non-Maximum Suppression (NMS), below which objects are not considered as sources. Default: 0.5       
+	`--merge_overlap_iou_thr_soft`: IOU soft threshold used to merge overlapping detected objects with same class. Default: 0.3       
+	`--merge_overlap_iou_thr_hard`: IOU hard threshold used to merge overlapping detected objects even if from different classes. Default: 0.7       
+
+**RUN**  
 	`--devices=[VALUE]`: Specifies the device for inference (e.g., cpu, cuda:0 or 0). Default: cpu   
- 	`--multigpu`: Enable multi-gpu inference. Default: disabled      
- 
+ 	`--multigpu`: Enable multi-gpu inference. Default: disabled     
+
+**PARALLEL PROCESSING**  
+	`--split_img_in_tiles`: Enable splitting of input image in multiple subtiles for parallel processing. Default: disabled   
+ 	`--tile_xsize=[VALUE]`: Sub image size in pixel along x. Default: 512   
+	`--tile_ysize=[VALUE]`: Sub image size in pixel along y. Default: 512   
+	`--tile_xstep=[VALUE]`: Sub image step fraction along x (=1 means no overlap). Default: 1.0   
+ 	`--tile_ystep=[VALUE]`: Sub image step fraction along y (=1 means no overlap). Default: 1.0    
+  	`--max_ntasks_per_worker=[VALUE]`: Max number of tasks assigned to a MPI processor worker. Default: 100      
+   
+**PLOTTING**  
+	`--draw_plots`: Enable plotting of image and inference results superimposed. Default: disabled   
+ 	`--draw_class_label_in_caption`: Enable drawing of class labels inside detected source caption in inference plots. Default: disabled   
+
+ **OUTPUT DATA**  
+	`--save_plots`: Enable saving of inference plots. Default: disabled   
+	`--save_tile_catalog`: Enable saving of catalog files for each subtile in parallel processing (debug scopes). Default: disabled   
+ 	`--save_tile_region`: Enable saving of DS9 region files for each subtile in parallel processing (debug scopes). Default: disabled   
+  	`--save_tile_img`: Enable saving of subtile image in parallel processing (debug scopes). Default: disabled   
+   	`--detect_outfile`: Output plot PNG filename (internally generated if left empty). Default: empty   
+	`--detect_outfile_json`: Output json filename with detected objects (internally generated if left empty). Default: empty      	
