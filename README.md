@@ -116,7 +116,7 @@ We have trained various YOLO v8 models from scratch on the same annotated radio 
 * scale=0.89
 * crop_fraction=1.0
 
-** Trained models **
+**Trained models**
 
 | Model Base  | Img Size | Weights | File Size | Notes |
 | ------------- | ------------- | ------------- | ------------- | ------------- |
