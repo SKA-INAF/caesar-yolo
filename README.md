@@ -43,7 +43,7 @@ Supported options are:
   	`--ymax=[VALUE]`: Image max y to be read (read all if -1). Default: -1   	
   
 **MODEL**  
-	`--weights=[VALUE]`: Path to model weight file (.pt). This option is **mandatory**    
+	`--weights=[VALUE]`: Path to model weight file (.pt). This option is **mandatory**. Various pre-trained models are provided (see below).       
  
 **DATA PRE-PROCESSING**     
   `--preprocessing`: Enable image pre-processing. Default: disabled   
@@ -97,3 +97,33 @@ Supported options are:
   	`--save_tile_img`: Enable saving of subtile image in parallel processing (debug scopes). Default: disabled   
    	`--detect_outfile`: Output plot PNG filename (internally generated if left empty). Default: empty   
 	`--detect_outfile_json`: Output json filename with detected objects (internally generated if left empty). Default: empty      	
+
+## **Pre-trained models**  
+We have trained various YOLO v8 models from scratch on the same annotated radio dataset that was previously used to train Mask R-CNN model in paper Riggi+2023 (see Credits for full reference). We provide below the training configuration and links to pre-trained model weights.
+
+**Training configuration**
+* epochs=300
+* batch=16
+* erasing=0,
+* mosaic=0,
+* hsv_h=0,
+* hsv_s=0,
+* hsv_v=0,
+* translate=0,
+* degrees=180,
+* flipud=0.5,
+* fliplr=0.5,
+* scale=0.89
+* crop_fraction=1.0
+
+** Trained models **
+
+| Model Base  | Img Size | Weights | File Size | Notes |
+| ------------- | ------------- | ------------- | ------------- | ------------- |
+| yolov8n  | 640  | [url](https://tinyurl.com/2jznb7ra) | 6 MB | |
+| yolov8l  | 128  | [url](https://tinyurl.com/53mm7svh) | 83.6 MB | |
+| yolov8l  | 256  | [url](https://tinyurl.com/mr8yjumv) | 83.6 MB | |
+| yolov8l  | 512  | [url](https://tinyurl.com/52p8bczz) | 83.6 MB | |
+| yolov8l  | 512  | [url](https://tinyurl.com/2s4dvtdc) | 83.6 MB | scale=0.5 |
+| yolov8l  | 640  | [url](https://tinyurl.com/4b5p4frc) | 83.6 MB | |
+| yolov8l  | 1024  | [url](https://tinyurl.com/mry8c2b4) | 83.7 MB | |
