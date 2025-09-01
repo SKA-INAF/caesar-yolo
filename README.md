@@ -98,6 +98,57 @@ Supported options are:
    	`--detect_outfile`: Output plot PNG filename (internally generated if left empty). Default: empty   
 	`--detect_outfile_json`: Output json filename with detected objects (internally generated if left empty). Default: empty      	
 
+Below, we report a sample run script:   
+
+```
+#!/bin/bash
+
+# - Set env
+VENV_DIR="/opt/software/venvs/caesar-yolo"
+SCRIPT_DIR="$VENV_DIR/bin"
+source $SCRIPT_DIR/activate
+
+# - Set options
+INPUTFILE="galaxy0001.fits"
+WEIGHTFILE="weights-yolov8l_scratch_imgsize640_nepochs300.pt" # see pretrained weights below
+PREPROC_OPTS="--preprocessing --imgsize=640 --zscale_stretch --zscale_contrasts=0.25,0.25,0.25 --normalize_minmax --norm_min=0 --norm_max=255 "
+DET_OPTS="--scoreThr=0.5 --merge_overlap_iou_thr_soft=0.3 --merge_overlap_iou_thr_hard=0.8 "
+DRAW_OPTS="--draw_plots --save_plots --draw_class_label_in_caption "
+
+# - Run
+python $SCRIPT_DIR/run.py --image=$INPUTFILE --weights=$WEIGHTFILE \
+  	$PREPROC_OPTS \
+  	$DET_OPTS \
+  	$DRAW_OPTS \
+	--devices="cuda:0"
+```
+
+Below, we report a sample parallel run script :   
+
+```
+#!/bin/bash
+
+# - Set env
+VENV_DIR="/opt/software/venvs/caesar-yolo"
+SCRIPT_DIR="$VENV_DIR/bin"
+source $SCRIPT_DIR/activate
+
+# - Set options
+INPUTFILE="G005.5+0.0IFx_Mosaic_Mom0.fits"
+WEIGHTFILE="weights-yolov8l_scratch_imgsize512_nepochs300.pt" # see pretrained weights below
+PREPROC_OPTS="--preprocessing --imgsize=512 --zscale_stretch --zscale_contrasts=0.25,0.25,0.25 --normalize_minmax --norm_min=0 --norm_max=255 "
+DET_OPTS="--scoreThr=0.5 --merge_overlap_iou_thr_soft=0.3 --merge_overlap_iou_thr_hard=0.8 "
+DRAW_OPTS="--draw_plots --save_plots --draw_class_label_in_caption "
+PARALLEL_OPTS="--split_img_in_tiles --tile_xsize=512 --tile_ysize=512 --tile_xstep=1 --tile_ystep=1 "
+
+# - Parallel run
+mpirun -np 4 python $SCRIPT_DIR/run.py --image=$INPUTFILE --weights=$WEIGHTFILE \
+  $PREPROC_OPTS \
+  $DET_OPTS \
+  $DRAW_OPTS \
+  $PARALLEL_OPTS
+```
+
 ## **Pre-trained models**  
 We have trained various YOLO v8 models from scratch on the same annotated radio dataset that was previously used to train Mask R-CNN model in paper Riggi+2023 (see Credits for full reference). We provide below the training configuration and links to pre-trained model weights.
 
