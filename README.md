@@ -183,7 +183,7 @@ We provide below the training configuration we used for producing the models and
 | Model Base  | Img Size | Weights | File Size[MB] | F1 (compact)[%] | F1 (extended)[%] | F1 (extended-multisland)[%] | F1 (spurious)[%] | F1 (flagged)[%] | Notes |
 | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
 | yolov8n  | 640  | [url](https://tinyurl.com/2jznb7ra) | 6 | 76.5 | 88.3 | 87.8 | 53.1 | 82.2 | |
-| yolov8n  | 640  | XXX | 6 | 76.9 | 89.1 | 87.6 | 60.0 | 85.4 | pre-trained |
+| yolov8n  | 640  | [url](https://tinyurl.com/4ha9jzxm) | 6 | 76.9 | 89.1 | 87.6 | 60.0 | 85.4 | pre-trained |
 | yolov8l  | 128  | [url](https://tinyurl.com/53mm7svh) | 83.6 | 57.1 | 79.0 | 78.1 | 12.5 | 73.0 | |
 | yolov8l  | 256  | [url](https://tinyurl.com/mr8yjumv) | 83.6 | 77.1 | 87.5 | 87.7 | 35.7 | 65.1 | |
 | yolov8l  | 512  | [url](https://tinyurl.com/52p8bczz) | 83.6 | 76.1 | 88.7 | 87.6 | 45.1 | 74.6 | |
