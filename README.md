@@ -159,7 +159,8 @@ Models were trained to detect 5 classes of radio objects:
 3: `extended-multisland`   
 4: `flagged`    
 
-See the original publication for a description of each class.    
+The original image size is 132x132 pixels.
+See the original publication for a description of each class and more details on the dataset.    
 We provide below the training configuration we used for producing the models and links to pre-trained model weights.
 
 **Training configuration**
@@ -179,12 +180,18 @@ We provide below the training configuration we used for producing the models and
 
 **Trained models**
 
-| Model Base  | Img Size | Weights | File Size | Notes |
-| ------------- | ------------- | ------------- | ------------- | ------------- |
-| yolov8n  | 640  | [url](https://tinyurl.com/2jznb7ra) | 6 MB | |
-| yolov8l  | 128  | [url](https://tinyurl.com/53mm7svh) | 83.6 MB | |
-| yolov8l  | 256  | [url](https://tinyurl.com/mr8yjumv) | 83.6 MB | |
-| yolov8l  | 512  | [url](https://tinyurl.com/52p8bczz) | 83.6 MB | |
-| yolov8l  | 512  | [url](https://tinyurl.com/2s4dvtdc) | 83.6 MB | scale=0.5 |
-| yolov8l  | 640  | [url](https://tinyurl.com/4b5p4frc) | 83.6 MB | |
-| yolov8l  | 1024  | [url](https://tinyurl.com/mry8c2b4) | 83.7 MB | |
+| Model Base  | Img Size | Weights | File Size[MB] | F1 (compact)[%] | F1 (extended)[%] | F1 (extended-multisland)[%] | F1 (spurious)[%] | F1 (flagged)[%] | Notes |
+| ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- | ------------- |
+| yolov8n  | 640  | [url](https://tinyurl.com/2jznb7ra) | 6 | 76.5 | 88.3 | 87.8 | 53.1 | 82.2 | |
+| yolov8n  | 640  | XXX | 6 | 76.9 | 89.1 | 87.6 | 60.0 | 85.4 | pre-trained |
+| yolov8l  | 128  | [url](https://tinyurl.com/53mm7svh) | 83.6 | 57.1 | 79.0 | 78.1 | 12.5 | 73.0 | |
+| yolov8l  | 256  | [url](https://tinyurl.com/mr8yjumv) | 83.6 | 77.1 | 87.5 | 87.7 | 35.7 | 65.1 | |
+| yolov8l  | 512  | [url](https://tinyurl.com/52p8bczz) | 83.6 | 76.1 | 88.7 | 87.6 | 45.1 | 74.6 | |
+| yolov8l  | 512  | [url](https://tinyurl.com/2s4dvtdc) | 83.6 | 77.3 | 90.2 | 88.3 | 51.9 | 78.7 | scale=0.5 |
+| yolov8l  | 640  | [url](https://tinyurl.com/4b5p4frc) | 83.6 | 76.0 | 87.4 | 88.2 | 41.7 | 72.3 | |
+| yolov8l  | 1024  | [url](https://tinyurl.com/mry8c2b4) | 83.7 | 74.1 | 88.0 | 83.6 | 40.5 | 83.0 | |
+| yolo11l  | 128  | XXX | XXX | 56.3 | 77.2 | 79.5 | 18.0 | 62.7 | |
+| yolo11l  | 256  | XXX | XXX | XXX | XXX | XXX | XXX | XXX | |
+| yolo11l  | 512  | XXX | XXX | XXX | XXX | XXX | XXX | XXX | |
+| yolo11l  | 640  | XXX | XXX | XXX | XXX | XXX | XXX | XXX | |
+| yolo11l  | 1024  | XXX | XXX | XXX | XXX | XXX | XXX | XXX | |
