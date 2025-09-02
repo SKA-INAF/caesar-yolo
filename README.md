@@ -190,8 +190,8 @@ We provide below the training configuration we used for producing the models and
 | yolov8l  | 512  | [url](https://tinyurl.com/2s4dvtdc) | 83.6 | 77.3 | 90.2 | 88.3 | 51.9 | 78.7 | scale=0.5 |
 | yolov8l  | 640  | [url](https://tinyurl.com/4b5p4frc) | 83.6 | 76.0 | 87.4 | 88.2 | 41.7 | 72.3 | |
 | yolov8l  | 1024  | [url](https://tinyurl.com/mry8c2b4) | 83.7 | 74.1 | 88.0 | 83.6 | 40.5 | 83.0 | |
-| yolo11l  | 128  | XXX | XXX | 56.3 | 77.2 | 79.5 | 18.0 | 62.7 | |
+| yolo11l  | 128  | [url](https://tinyurl.com/7t6a4ez2) | 48.8 | 56.3 | 77.2 | 79.5 | 18.0 | 62.7 | |
 | yolo11l  | 256  | XXX | XXX | XXX | XXX | XXX | XXX | XXX | |
 | yolo11l  | 512  | XXX | XXX | XXX | XXX | XXX | XXX | XXX | |
-| yolo11l  | 640  | XXX | XXX | XXX | XXX | XXX | XXX | XXX | |
+| yolo11l  | 640  | [url](https://tinyurl.com/mwudw7fz) | 48.9 | 76.0 | 88.7 | 86.8 | 53.0 | 82.1 | |
 | yolo11l  | 1024  | XXX | XXX | XXX | XXX | XXX | XXX | XXX | |
