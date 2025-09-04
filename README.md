@@ -199,6 +199,7 @@ F1= 2*C*R/(C+R)
 | yolov8l  | 1024  | [url](https://tinyurl.com/mry8c2b4) | 83.7 | 74.1 | 88.0 | 83.6 | 40.5 | 83.0 | |
 | yolo11n  | 640  | [url](https://tinyurl.com/3mv7rynj) | 5.2 | 76.3 | 88.9 | 86.9 | 56.7 | 87.0 | pre-trained, scale=0.5|
 | yolo11n  | 640  | [url](https://tinyurl.com/2za9frrd) | 5.2 | 75.6 | 85.3 | 81.7 | 41.0 | 74.6 | |
+| yolo11n  | 640  | [url](https://tinyurl.com/yc39jb2z) | 5.2 | 76.1 | 86.5 | 86.2 | 49.6 | 77.9 | scale=0.5 |
 | yolo11l  | 128  | [url](https://tinyurl.com/7t6a4ez2) | 48.8 | 56.3 | 77.2 | 79.5 | 18.0 | 62.7 | |
 | yolo11l  | 256  | [url](https://tinyurl.com/znctupc9) | 48.8 | 76.8 | 86.2 | 86.1 | 45.0 | 79.6 | |
 | yolo11l  | 512  | XXX | XXX | XXX | XXX | XXX | XXX | XXX | |
