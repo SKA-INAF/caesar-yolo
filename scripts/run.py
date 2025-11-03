@@ -62,14 +62,20 @@ def parse_args():
 	parser = argparse.ArgumentParser(description='CAESAR-YOLO options')
 
 	# - DATA OPTIONS
-	parser.add_argument('--image', required=False, metavar="Input image", type=str, default="", help='Input image in FITS format to apply the model (used in detect task)')
-	parser.add_argument('--datalist', required=False, metavar="/path/to/dataset", default="", help='Input filelist (.json) containing the list of images to be processed')
+	parser.add_argument('--inputfile', required=True, default="", help='Input filelist (if .json) containing the list of images to be processed, or input image (.fits/.png/.jpg)')
+	#parser.add_argument('--image', required=False, metavar="Input image", type=str, default="", help='Input image to apply the model (.fits/.png/.jpg). Takes precedence over --datalist option.')
+	#parser.add_argument('--datalist', required=False, metavar="/path/to/dataset", default="", help='Input filelist (.json) containing the list of images to be processed')
 	parser.add_argument('--maxnimgs', required=False, metavar="", type=int, default=-1, help="Max number of images to consider in dataset (-1=all) (default=-1)")
 
 	# - MODEL OPTIONS
-	parser.add_argument('--weights', required=True, metavar="/path/to/weights.h5", help="Path to weights .h5 file")
+	parser.add_argument('--weights', required=True, metavar="/path/to/weights.pt", help="Path to weights .pt file")
 	
 	# - DATA PRE-PROCESSING OPTIONS
+	parser.add_argument('--xmin', dest='xmin', required=False, type=int, default=-1, help='Image min x to be read (read all if -1)') 
+	parser.add_argument('--xmax', dest='xmax', required=False, type=int, default=-1, help='Image max x to be read (read all if -1)') 
+	parser.add_argument('--ymin', dest='ymin', required=False, type=int, default=-1, help='Image min y to be read (read all if -1)') 
+	parser.add_argument('--ymax', dest='ymax', required=False, type=int, default=-1, help='Image max y to be read (read all if -1)') 
+	
 	parser.add_argument('--imgsize', dest='imgsize', required=False, type=int, default=640, help='Size in pixel used to resize input image (default=640)')
 	
 	parser.add_argument('--preprocessing', dest='preprocessing', action='store_true',help='Apply pre-processing to input image ')	
@@ -112,10 +118,6 @@ def parse_args():
 	parser.add_argument('--merge_overlap_iou_thr_soft', required=False, default=0.3, type=float, metavar="IOU threshold used to merge overlapping detected objects with same class",help="IOU threshold used to merge overlapping detected objects with same class")
 	parser.add_argument('--merge_overlap_iou_thr_hard', required=False, default=0.8, type=float, metavar="IOU threshold used to merge overlapping detected objects, even those with same class",help="IOU threshold used to merge overlapping detected objects")
 	
-	parser.add_argument('--xmin', dest='xmin', required=False, type=int, default=-1, help='Image min x to be read (read all if -1)') 
-	parser.add_argument('--xmax', dest='xmax', required=False, type=int, default=-1, help='Image max x to be read (read all if -1)') 
-	parser.add_argument('--ymin', dest='ymin', required=False, type=int, default=-1, help='Image min y to be read (read all if -1)') 
-	parser.add_argument('--ymax', dest='ymax', required=False, type=int, default=-1, help='Image max y to be read (read all if -1)') 
 	
 	# - PARALLEL PROCESSING OPTIONS
 	parser.add_argument('--split_img_in_tiles', dest='split_img_in_tiles', action='store_true')	
@@ -158,23 +160,18 @@ def parse_args():
 def validate_args(args):
 	""" Validate arguments """
 	
-	# - Check image/datalist arg
-	has_image= (args.image and args.image!="")
-	has_datalist= (args.datalist and args.datalist!="")
-	if not has_image and not has_datalist:
-		logger.error("At least one of these arguments (--image, --datalist) is required for detect task!")
+	# - Check inputfile extension
+	is_datalist= args.inputfile.endswith('.json')
+	is_image= args.inputfile.endswith('.fits') or args.inputfile.endswith('.png') or args.inputfile.endswith('.jpg')
+	if not is_datalist and not is_image:
+		logger.error("Unsupported inputfile (.json/.fits/.png/.jpg required)!")
 		return -1
 	
-	# - Check image arg
-	if has_image:
-		image_exists= os.path.isfile(args.image)
-		valid_extension= args.image.endswith('.fits') or args.image.endswith('.png') or args.image.endswith('.jpg')
-		if not image_exists:
-			logger.error("Image argument must be an existing image on filesystem!")
-			return -1
-		if not valid_extension:
-			logger.error("Image must have .fits/.png/.jpg extension!")
-			return -1
+	# - Check if file exist
+	is_existing_file= os.path.isfile(args.inputfile)
+	if not is_existing_file:
+		logger.error("Input file not found, must be an existing image/datalist file on filesystem!")
+		return -1
 
 	# - Check maxnimgs
 	if args.maxnimgs==0 or (args.maxnimgs<0 and args.maxnimgs!=-1):
@@ -192,9 +189,6 @@ def validate_args(args):
 			return -1
 		
 	return 0
-	
-	
-
 	
 ############################################################
 #        DETECT
@@ -225,15 +219,15 @@ def run_inference_on_datalist(args, model, config, datakey="data"):
 
 	# - Parse datalist
 	try:
-		f= open(args.datalist, "r")
+		f= open(args.inputfile, "r")
 	except Exception as e:
-		logger.error(f"Failed to open datalist file {args.datalist} (err={str(e)})!")
+		logger.error(f"Failed to open datalist file {args.inputfile} (err={str(e)})!")
 		return -1
 		
 	try:
 		dict_list= json.load(f)[datakey]
 	except Exception as e:
-		logger.error(f"Failed to read dict list from datalist file {args.datalist} (err={str(e)})!")
+		logger.error(f"Failed to read dict list from datalist file {args.inputfile} (err={str(e)})!")
 		return -1
 
 	# - Disable save per image data in config
@@ -328,6 +322,9 @@ def main():
 	except Exception as ex:
 		logger.error("[PROC %d] Failed to get and parse options (err=%s)" % (procId, str(ex)))
 		return 1
+		
+	is_datalist= args.inputfile.endswith('.json')
+	is_image= args.inputfile.endswith('.fits') or args.inputfile.endswith('.png') or args.inputfile.endswith('.jpg')	
 
 	#===========================
 	#==   VALIDATE ARGS
@@ -406,7 +403,7 @@ def main():
 	# - Set detection options
 	CONFIG['img_size']= args.imgsize
 	CONFIG['preprocess_fcn']= dp
-	CONFIG['image_path']= args.image
+	CONFIG['image_path']= args.inputfile
 	CONFIG['image_xmin']= args.xmin
 	CONFIG['image_xmax']= args.xmax
 	CONFIG['image_ymin']= args.ymin
@@ -445,14 +442,13 @@ def main():
 	#===========================
 	#==   RUN
 	#===========================
-	if args.image!="":
-		if run_inference(args, model=model, config=CONFIG)<0:
-			logger.error("[PROC %d] Failed to run model inference!" % procId)
-			return 1
-	else:
-		if run_inference_on_datalist(args, model=model, config=CONFIG, datakey="data")<0:
-			logger.error("[PROC %d] Failed to run model inference!" % procId)
-			return 1
+	if is_image and run_inference(args, model=model, config=CONFIG)<0:
+		logger.error("[PROC %d] Failed to run model inference!" % procId)
+		return 1
+			
+	if is_datalist and run_inference_on_datalist(args, model=model, config=CONFIG, datakey="data")<0:
+		logger.error("[PROC %d] Failed to run model inference!" % procId)
+		return 1
 	
 	return 0
 
