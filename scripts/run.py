@@ -62,8 +62,8 @@ def parse_args():
 	parser = argparse.ArgumentParser(description='CAESAR-YOLO options')
 
 	# - DATA OPTIONS
-	parser.add_argument('--image', required=False, metavar="Input image", type=str, help='Input image in FITS format to apply the model (used in detect task)')
-	parser.add_argument('--datalist', required=False, metavar="/path/to/dataset", help='Train/test data filelist containing a list of json files')
+	parser.add_argument('--image', required=False, metavar="Input image", type=str, default="", help='Input image in FITS format to apply the model (used in detect task)')
+	parser.add_argument('--datalist', required=False, metavar="/path/to/dataset", default="", help='Input filelist (.json) containing the list of images to be processed')
 	parser.add_argument('--maxnimgs', required=False, metavar="", type=int, default=-1, help="Max number of images to consider in dataset (-1=all) (default=-1)")
 
 	# - MODEL OPTIONS
@@ -158,19 +158,23 @@ def parse_args():
 def validate_args(args):
 	""" Validate arguments """
 	
-	# - Check image arg
+	# - Check image/datalist arg
 	has_image= (args.image and args.image!="")
-	image_exists= os.path.isfile(args.image)
-	valid_extension= args.image.endswith('.fits') or args.image.endswith('.png') or args.image.endswith('.jpg')
-	if not has_image:
-		logger.error("Argument --image is required for detect task!")
+	has_datalist= (args.datalist and args.datalist!="")
+	if not has_image and not has_datalist:
+		logger.error("At least one of these arguments (--image, --datalist) is required for detect task!")
 		return -1
-	if not image_exists:
-		logger.error("Image argument must be an existing image on filesystem!")
-		return -1
-	if not valid_extension:
-		logger.error("Image must have .fits/.png/.jpg extension!")
-		return -1
+	
+	# - Check image arg
+	if has_image:
+		image_exists= os.path.isfile(args.image)
+		valid_extension= args.image.endswith('.fits') or args.image.endswith('.png') or args.image.endswith('.jpg')
+		if not image_exists:
+			logger.error("Image argument must be an existing image on filesystem!")
+			return -1
+		if not valid_extension:
+			logger.error("Image must have .fits/.png/.jpg extension!")
+			return -1
 
 	# - Check maxnimgs
 	if args.maxnimgs==0 or (args.maxnimgs<0 and args.maxnimgs!=-1):
@@ -196,7 +200,7 @@ def validate_args(args):
 #        DETECT
 ############################################################
 def run_inference(args, model, config):
-	""" Test the model on input dataset with ground truth knowledge """ 
+	""" Test the model on input image """ 
 
 	# - Create sfinder and detect sources
 	sfinder= SFinder(model, config)
@@ -213,6 +217,90 @@ def run_inference(args, model, config):
 	if status<0:
 		logger.error("sfinder run failed, see logs...")
 		return -1
+
+	return 0
+	
+def run_inference_on_datalist(args, model, config, datakey="data"):
+	""" Test the model on input datalist """ 
+
+	# - Parse datalist
+	try:
+		f= open(args.datalist, "r")
+	except Exception as e:
+		logger.error(f"Failed to open datalist file {args.datalist} (err={str(e)})!")
+		return -1
+		
+	try:
+		dict_list= json.load(f)[datakey]
+	except Exception as e:
+		logger.error(f"Failed to read dict list from datalist file {args.datalist} (err={str(e)})!")
+		return -1
+
+	# - Disable save per image data in config
+	config['save_catalog']= False
+	config['save_tile_catalog']= False
+	config['save_region']= False
+	config['save_tile_region']= False
+	config['save_img']= False
+	config['save_tile_img']= False
+	config['draw_plot']= False
+	config['save_plot']= False
+	
+	# - Create sfinder and detect sources
+	sfinder= SFinder(model, config)
+	sfinder.save_tile_regions= False
+	sfinder.save_tile_json= False
+	sfinder.write_to_ds9= False
+	sfinder.write_to_json= False
+	sfinder.save_tile_img= False
+	
+	# - Loop over images in list and detect source from each one
+	for index, item in enumerate(dict_list):
+		# - Set input image in config
+		if "filepath" not in item:
+			logger.error("filepath key not present in datalist!")
+			return -1
+		if isinstance(item["filepath"], list):	
+			input_img= item["filepath"][0]
+		else:
+			input_img= item["filepath"]
+			
+		image_exists= os.path.isfile(input_img)
+		valid_extension= input_img.endswith('.fits') or input_img.endswith('.png') or input_img.endswith('.jpg')
+		if not image_exists:
+			logger.warning(f"Input image {input_img} not found, skipping detect task ...")
+			continue
+		if not valid_extension:
+			logger.warning(f"Input image {input_img} extension not valid (fits/png/jpg supported), skipping detect task ...")
+			continue
+	
+		config['image_path']= input_img
+	
+		# - Run source detection
+		dict_list[index]["sources"]= []
+		
+		if args.split_img_in_tiles:
+			logger.info(f"Running sfinder parallel version on image {input_img} ...")
+			status= sfinder.run_parallel()
+		else:
+			logger.info(f"Running sfinder serial version on image {input_img} ...")
+			status= sfinder.run()
+
+		if status<0:
+			logger.error(f"sfinder run failed for image {input_img}, skipping...")
+			continue
+			
+		# - Get finder results
+		dict_list[index]["sources"]= sfinder.sources["sources"]
+		
+	# - Save to file
+	outfile_json= args.detect_outfile_json
+	if outfile_json=="":
+		outfile_json= "catalog.json"
+	
+	logger.info(f"Saving detected source catalogue to file {outfile_json} ...")
+	with open(outfile_json, 'w') as fp:
+		json.dump(dict_list, fp, indent=2)
 
 	return 0
 
@@ -349,9 +437,14 @@ def main():
 	#===========================
 	#==   RUN
 	#===========================
-	if run_inference(args, model=model, config=CONFIG)<0:
-		logger.error("[PROC %d] Failed to run model inference!" % procId)
-		return 1
+	if args.image!="":
+		if run_inference(args, model=model, config=CONFIG)<0:
+			logger.error("[PROC %d] Failed to run model inference!" % procId)
+			return 1
+	else:
+		if run_inference_on_datalist(args, model=model, config=CONFIG, datakey="data")<0:
+			logger.error("[PROC %d] Failed to run model inference!" % procId)
+			return 1
 	
 	return 0
 

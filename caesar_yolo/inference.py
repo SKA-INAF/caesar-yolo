@@ -527,6 +527,9 @@ class SFinder(object):
 		img_path_base= os.path.basename(img_fullpath)
 		img_path_base_noext= os.path.splitext(img_path_base)[0]
 		self.image_id= img_path_base_noext
+		
+		ny= image_data.shape[0]
+		nx= image_data.shape[1]
 	
 		# - Apply model 
 		analyzer= Analyzer(self.model, self.config)
@@ -539,6 +542,7 @@ class SFinder(object):
 		bboxes_det= analyzer.bboxes_final
 		scores_det= analyzer.scores_final	
 		classid_det= analyzer.class_ids_final
+		labels_det= analyzer.labels_final
 		
 		# - Return if no object was detected
 		if not bboxes_det:
@@ -547,6 +551,37 @@ class SFinder(object):
 	
 		# - Print results
 		logger.info("#%d objects found in image %s ..." % (len(bboxes_det), image_path))
+		
+		# - Set sources collection
+		self.sources["sources"]= []
+		
+		for i in range(len(bboxes_det)):
+			bbox= bboxes_det[i]
+			x1= bbox[0]
+			y1= bbox[1]
+			x2= bbox[2]
+			y2= bbox[3]
+			sname= "S" + str(i+1)
+			class_id= classid_det[i]
+			class_name= labels_det[i]
+			score= scores_det[i]
+			isAtBoxEdgeX= (x1==0 or x2==nx-1)
+			isAtBoxEdgeY= (y1==0 or y2==ny-1)
+			isAtBoxEdge= (isAtBoxEdgeX or isAtBoxEdgeY)
+			
+			source= {}
+			source["name"]= str(sname)
+			source["x1"]= float(x1)
+			source["x2"]= float(x2)
+			source["y1"]= float(y1)
+			source["y2"]= float(y2)
+			source["edge"]= int(isAtBoxEdge)
+			source["merged"]= int(0)
+			source["score"]= float(score)
+			source["class_name"]= str(class_name)
+			source["class_id"]= int(class_id)
+				
+			self.sources["sources"].append(source)
 		
 
 		return 0
@@ -1170,7 +1205,7 @@ class SFinder(object):
 		# - Return if called by other processor than MASTER
 		if self.procId!=self.MASTER_ID:
 			return
-
+				
 		# - Write json results?
 		if self.write_to_json:
 			logger.info("[PROC %d] Writing results for image %s to json ..." % (self.procId, str(self.image_id)))
