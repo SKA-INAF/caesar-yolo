@@ -255,7 +255,17 @@ def run_inference_on_datalist(args, model, config, datakey="data"):
 	sfinder.save_tile_img= False
 	
 	# - Loop over images in list and detect source from each one
+	out_dict_list= {"data": []}
+	
 	for index, item in enumerate(dict_list):
+		# - Check max number of images
+		if args.maxnimgs!=-1 and index+1>args.maxnimgs:
+			logger.info(f"Max number of images to be processed {args.maxnimgs} reached, exit loop...")
+			break
+	
+		out_dict_list["data"].append(item)
+		out_dict_list["data"][index]["sources"]= []
+	
 		# - Set input image in config
 		if "filepath" not in item:
 			logger.error("filepath key not present in datalist!")
@@ -277,8 +287,6 @@ def run_inference_on_datalist(args, model, config, datakey="data"):
 		config['image_path']= input_img
 	
 		# - Run source detection
-		dict_list[index]["sources"]= []
-		
 		if args.split_img_in_tiles:
 			logger.info(f"Running sfinder parallel version on image {input_img} ...")
 			status= sfinder.run_parallel()
@@ -291,7 +299,7 @@ def run_inference_on_datalist(args, model, config, datakey="data"):
 			continue
 			
 		# - Get finder results
-		dict_list[index]["sources"]= sfinder.sources["sources"]
+		out_dict_list["data"][index]["sources"]= sfinder.sources["sources"]
 		
 	# - Save to file
 	outfile_json= args.detect_outfile_json
@@ -300,7 +308,7 @@ def run_inference_on_datalist(args, model, config, datakey="data"):
 	
 	logger.info(f"Saving detected source catalogue to file {outfile_json} ...")
 	with open(outfile_json, 'w') as fp:
-		json.dump(dict_list, fp, indent=2)
+		json.dump(out_dict_list, fp, indent=2)
 
 	return 0
 
