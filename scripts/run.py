@@ -103,7 +103,7 @@ def parse_args():
 	
 	parser.add_argument('--zscale_stretch', dest='zscale_stretch', action='store_true',help='Do zscale transform')	
 	parser.set_defaults(zscale_stretch=False)
-	parser.add_argument('--zscale_contrasts', dest='zscale_contrasts', required=False, type=str, default='0.25,0.25,0.25', help='zscale contrasts applied to all channels, separated by commas') 
+	parser.add_argument('--zscale_contrasts', dest='zscale_contrasts', required=False, type=str, default='0.25:0.25:0.25', help='zscale contrasts applied to all channels, separated by colons') 
 	
 	parser.add_argument('--chan3_preproc', dest='chan3_preproc', action='store_true',help='Use the 3 channel pre-processor')	
 	parser.set_defaults(chan3_preproc=False)
@@ -341,7 +341,7 @@ def main():
 	#==   SET PARAMETERS
 	#===========================
 	# - Set data pre-processing options
-	zscale_contrasts= [float(x) for x in args.zscale_contrasts.split(',')]
+	zscale_contrasts= [float(x) for x in args.zscale_contrasts.split(':')]
 	if args.chan3_preproc and args.nchannels!=3:
 		logger.error("You selected chan3_preproc pre-processing options, you must set nchannels options to 3!")
 		return 1
