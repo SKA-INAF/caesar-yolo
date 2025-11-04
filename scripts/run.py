@@ -103,7 +103,7 @@ def parse_args():
 	
 	parser.add_argument('--zscale_stretch', dest='zscale_stretch', action='store_true',help='Do zscale transform')	
 	parser.set_defaults(zscale_stretch=False)
-	parser.add_argument('--zscale_contrasts', dest='zscale_contrasts', required=False, type=str, default='0.25,0.25,0.25', help='zscale contrasts applied to all channels, separated by commas') 
+	parser.add_argument('--zscale_contrasts', dest='zscale_contrasts', required=False, type=str, default='0.25;0.25;0.25', help='zscale contrasts applied to all channels, separated by semi-commas') 
 	
 	parser.add_argument('--chan3_preproc', dest='chan3_preproc', action='store_true',help='Use the 3 channel pre-processor')	
 	parser.set_defaults(chan3_preproc=False)
@@ -127,7 +127,7 @@ def parse_args():
 	parser.add_argument('--max_ntasks_per_worker', dest='max_ntasks_per_worker', required=False, type=int, default=100, help='Max number of tasks assigned to a MPI processor worker') 
 
 	# - RUN OPTIONS
-	parser.add_argument('--devices', required=False, type=str, default="cpu", metavar="Specifies the device for inference (e.g., cpu, cuda:0).", help="Specifies the device for inference (e.g., cpu, cuda:0 or 0). Separated by commas")
+	parser.add_argument('--devices', required=False, type=str, default="cpu", metavar="Specifies the device for inference (e.g., cpu, cuda:0).", help="Specifies the device for inference (e.g., cpu, cuda:0 or 0). Separated by semi-commas")
 	parser.add_argument('--multigpu', dest='multigpu', action='store_true')	
 	parser.set_defaults(multigpu=False)
 
@@ -341,7 +341,7 @@ def main():
 	#==   SET PARAMETERS
 	#===========================
 	# - Set data pre-processing options
-	zscale_contrasts= [float(x) for x in args.zscale_contrasts.split(',')]
+	zscale_contrasts= [float(x) for x in args.zscale_contrasts.split(';')]
 	if args.chan3_preproc and args.nchannels!=3:
 		logger.error("You selected chan3_preproc pre-processing options, you must set nchannels options to 3!")
 		return 1
@@ -352,7 +352,7 @@ def main():
 		weights_path= args.weights
 		
 	# - Set device option
-	devices= [str(x) for x in args.devices.split(',')]
+	devices= [str(x) for x in args.devices.split(';')]
 	if not devices:
 		logger.error("Empty list of devices for inference, at least one must be given!")
 		return 1
