@@ -363,6 +363,7 @@ def main():
 	preprocess_stages= []
 
 	if args.subtract_bkg:
+		logger.info(f"Adding BkgSubtractor transform (sigma={args.sigma_bkg}, use_mask_box={args.use_box_mask_in_bkg}, mask_fract={args.bkg_box_mask_fract}, chid={args.bkg_chid})")
 		preprocess_stages.append(BkgSubtractor(sigma=args.sigma_bkg, use_mask_box=args.use_box_mask_in_bkg, mask_fract=args.bkg_box_mask_fract, chid=args.bkg_chid))
 
 	if args.clip_shift_data:
@@ -375,12 +376,16 @@ def main():
 		preprocess_stages.append(ChanResizer(nchans=args.nchannels))
 
 	if args.zscale_stretch:
+		logger.info(f"Adding ZScale transform (contrasts={zscale_contrasts})")
+		print("zscale_contrasts")
+		print(zscale_contrasts)
 		preprocess_stages.append(ZScaleTransformer(contrasts=zscale_contrasts))
 
 	if args.chan3_preproc:
 		preprocess_stages.append( Chan3Trasformer(sigma_clip_baseline=args.sigma_clip_baseline, sigma_clip_low=args.sigma_clip_low, sigma_clip_up=args.sigma_clip_up, zscale_contrast=zscale_contrasts[0]) )
 
 	if args.normalize_minmax:
+		logger.info(f"Adding MinMaxNormalizer transform (norm_min={args.norm_min}, norm_max={args.norm_max})")
 		preprocess_stages.append(MinMaxNormalizer(norm_min=args.norm_min, norm_max=args.norm_max))
 
 	logger.info("[PROC %d] Data pre-processing steps: %s" % (procId, str(preprocess_stages)))
