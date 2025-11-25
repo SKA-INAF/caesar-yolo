@@ -138,6 +138,8 @@ def parse_args():
 	parser.set_defaults(draw_class_label_in_caption=False)
 	
 	# - SAVE OPTIONS
+	parser.add_argument('--save_per_image_outputs', dest='save_per_image_outputs', action='store_true')	
+	parser.set_defaults(save_per_image_outputs=False)
 	parser.add_argument('--save_plots', dest='save_plots', action='store_true')	
 	parser.set_defaults(save_plots=False)
 	parser.add_argument('--save_tile_catalog', dest='save_tile_catalog', action='store_true')	
@@ -229,14 +231,16 @@ def run_inference_on_datalist(args, model, config, datakey="data"):
 		return -1
 
 	# - Disable save per image data in config
-	config['save_catalog']= False
-	config['save_tile_catalog']= False
-	config['save_region']= False
-	config['save_tile_region']= False
-	config['save_img']= False
-	config['save_tile_img']= False
-	config['draw_plot']= False
-	config['save_plot']= False
+	if not args.save_per_image_outputs:
+		logger.info("Disabling save outputs per individual image (e.g. only source list aggregated data will be saved) ...")
+		config['save_catalog']= False
+		config['save_tile_catalog']= False
+		config['save_region']= False
+		config['save_tile_region']= False
+		config['save_img']= False
+		config['save_tile_img']= False
+		config['draw_plot']= False
+		config['save_plot']= False
 	
 	# - Create sfinder and detect sources
 	sfinder= SFinder(model, config)
