@@ -91,6 +91,7 @@ Supported options are:
  	`--draw_class_label_in_caption`: Enable drawing of class labels inside detected source caption in inference plots. Default: disabled   
 
  **OUTPUT DATA**  
+	`--save_per_image_outputs`: Enable saving of per image output data in datalist-driven inference run. Default: disabled            
 	`--save_plots`: Enable saving of inference plots. Default: disabled   
 	`--save_tile_catalog`: Enable saving of catalog files for each subtile in parallel processing (debug scopes). Default: disabled   
  	`--save_tile_region`: Enable saving of DS9 region files for each subtile in parallel processing (debug scopes). Default: disabled   
