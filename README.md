@@ -205,4 +205,4 @@ F1= 2*C*R/(C+R)
 | yolo11l  | 256  | [url](https://tinyurl.com/znctupc9) | 48.8 | 76.8 | 86.2 | 86.1 | 45.0 | 79.6 | |
 | yolo11l  | 512  | [url](https://tinyurl.com/4vfh5xmf) | 48.8 | 76.3 | 87.9 | 87.5 | 53.0 | 82.7 | |
 | yolo11l  | 640  | [url](https://tinyurl.com/mwudw7fz) | 48.9 | 76.0 | 88.7 | 86.8 | 53.0 | 82.1 | |
-| yolo11l  | 1024  | XXX | XXX | XXX | XXX | XXX | XXX | XXX | |
+| yolo11l  | 1024  | [url](https://tinyurl.com/2vmwf2pu) | XXX | XXX | XXX | XXX | XXX | XXX | |
