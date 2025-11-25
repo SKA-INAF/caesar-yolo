@@ -259,13 +259,21 @@ def run_inference_on_datalist(args, model, config, datakey="data"):
 		out_dict_list["data"][index]["sources"]= []
 	
 		# - Set input image in config
-		if "filepath" not in item:
-			logger.error("filepath key not present in datalist!")
+		if "filepath" not in item and "filepaths" not in item:
+			logger.error("filepath/filepaths key not present in datalist!")
 			return -1
-		if isinstance(item["filepath"], list):	
-			input_img= item["filepath"][0]
-		else:
-			input_img= item["filepath"]
+			
+		if "filepath" in item:
+			if isinstance(item["filepath"], list):	
+				input_img= item["filepath"][0]
+			else:
+				input_img= item["filepath"]
+			
+		elif "filepaths" in item:
+			if isinstance(item["filepaths"], list):	
+				input_img= item["filepaths"][0]
+			else:
+				input_img= item["filepaths"]	
 			
 		image_exists= os.path.isfile(input_img)
 		valid_extension= input_img.endswith('.fits') or input_img.endswith('.png') or input_img.endswith('.jpg')
