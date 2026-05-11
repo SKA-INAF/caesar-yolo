@@ -111,7 +111,7 @@ class Analyzer(object):
 			'compact': "blue",
 			'extended': "green",	
 			'extended-multisland': "orange",
-			'flagged': "magenta",
+			'flagged': "black",
 		}
 
 

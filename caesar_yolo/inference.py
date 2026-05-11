@@ -34,6 +34,7 @@ from regions import PolygonPixelRegion, RectanglePixelRegion, PixCoord
 
 # - Draw modules
 import matplotlib.pyplot as plt
+from matplotlib import patches, lines
 
 # - caesar-yolo modules
 from caesar_yolo import logger
@@ -336,11 +337,19 @@ class SFinder(object):
 			'spurious': "red",
 			'compact': "blue",
 			'extended': "green",
-			'extended-multisland': "yellow",
+			'extended-multisland': "orange",
 			'flagged': "black",
-			'diffuse': "magenta"
+			'diffuse': "yellow"
 		}
-
+		self.class_color_map= {
+			'bkg': (0,0,0),# black
+			'spurious': (1,0,0),# red
+			'compact': (0,0,1),# blue
+			'extended': (1,1,0),# green	
+			'extended-multisland': (1,0.647,0),# orange
+			'flagged': (0,0,0),# black
+		}
+		
 		# - Save json catalog output file
 		self.save_tile_json= config['save_tile_catalog']
 		self.write_to_json= config['save_catalog']
@@ -349,6 +358,13 @@ class SFinder(object):
 		# - Save image FITS
 		self.save_tile_img= config['save_tile_img']
 		self.outfile_img= ""
+		
+		# - Save detections plot
+		self.save_plot= config['save_plot']
+		self.draw_class_label_in_caption= config['draw_class_label_in_caption']
+		self.outfile_plot= ""
+		
+		
 		
 		
 	def set_img_size_params(self):
@@ -531,6 +547,11 @@ class SFinder(object):
 	
 		# - Apply model 
 		analyzer= Analyzer(self.model, self.config)
+		analyzer.write_to_json= False # disable saving of json catalog file (will be done in this method but at the end)
+		analyzer.write_to_ds9= False  # disable saving of DS9 region file (will be done in this method but at the end)
+		analyzer.save_img= False      # disable saving of FITS image
+		analyzer.save_plots= False    # disable saving of img+detections plot
+		analyzer.draw= False          # disable drawing
 		
 		if analyzer.predict(image=image_data, image_id=self.image_id, header=header)<0:
 			logger.error("Failed to run model prediction on image %s!" % (image_path))
@@ -541,6 +562,7 @@ class SFinder(object):
 		scores_det= analyzer.scores_final	
 		classid_det= analyzer.class_ids_final
 		labels_det= analyzer.labels_final
+		img_proc= analyzer.image
 		
 		# - Return if no object was detected
 		if not bboxes_det:
@@ -587,7 +609,25 @@ class SFinder(object):
 		# - Save to file
 		logger.info("Saving source results to file ...")
 		self.save()
-
+		
+		# - Create and save detections plot?
+		if self.save_plot:
+			if self.outfile_plot=="":
+				outfile_plot= 'plot_' + str(self.image_id) + '.png'
+			else:
+				outfile_plot= self.outfile_plot
+			logger.info(f"Saving detections plot to file {outfile_plot} ...")
+			
+			self.save_detections_plot(
+				image_data=img_proc,
+				bboxes=bboxes_det,
+				scores=scores_det,
+				labels=labels_det,
+				outfile=outfile_plot,
+				draw_class_label_in_caption=self.draw_class_label_in_caption,
+				plot_title=img_path_base_noext
+			)
+		
 		# - Stop timer and count runtime
 		t1= time.time()
 		runtime= t1-t0
@@ -1336,4 +1376,74 @@ class SFinder(object):
 				logger.warn("[PROC %d] Failed to write region list to file (err=%s)!" % (self.procId, str(e)))
 			
 
+	def save_detections_plot(
+		self, 
+		image_data,
+		bboxes,
+		scores,
+		labels,
+		outfile,
+		draw_class_label_in_caption=True,
+		plot_title="img + detections"
+	):
+		""" Draw results (img+detections) and save as image """
+		
+		# - Copy image
+		img= image_data.copy()
+		
+		# - Normalize safely for display
+		img = np.nan_to_num(img)
+		
+		# - Normalize image for drawing scopes to [0,255]
+		img_min= img.min()
+		img_max= img.max()
+		img= 255. * (img - img_min)/(img_max - img_min) 
+		img= img.astype(np.uint32)
+		
+		# - Draw
+		figsize=(16,16)
+		fig, ax = plt.subplots(1, figsize=figsize)
+		#fig, ax = plt.subplots()
+		
+		# - Show area outside image boundaries
+		title= plot_title
+		height, width = image_data.shape[:2]
+		ax.set_title(plot_title, fontsize=24)
+		ax.set_ylim(height + 2, -2)
+		ax.set_xlim(-2, width + 2)
+		ax.axis('off')
+		
+		ax.imshow(img, cmap="gray")
 
+		# - Draw bounding box rect
+		for i in range(len(bboxes)):
+			bbox= bboxes[i]
+			score= scores[i]
+			label= labels[i]
+			color = self.class_color_map[label]
+			
+			# - Draw bounding box rect
+			x1= bbox[0]
+			y1= bbox[1]
+			x2= bbox[2]
+			y2= bbox[3]
+			dx= x2-x1
+			dy= y2-y1
+			
+			rect= patches.Rectangle((x1, y1), x2-x1, y2-y1, linewidth=2, alpha=0.7, linestyle="solid", edgecolor=color, facecolor='none')
+			ax.add_patch(rect)
+			
+			# - Draw label
+			if draw_class_label_in_caption:
+				caption = "{} {:.2f}".format(label, score)
+				ax.text(x1, y1 - 2, caption, color=color, size=20, backgroundcolor="none")
+			else:
+				caption = "{:.2f}".format(score)
+				ax.text(x1 + dx/2 - 4, y1 - 1, caption, color="darkturquoise", size=30, backgroundcolor="none")
+
+		# - Write to file	
+		logger.info("Write detections plot to file %s ..." % outfile)
+		#fig.savefig(outfile)
+		fig.savefig(outfile, dpi=300, bbox_inches="tight", pad_inches=0.5)
+		plt.close(fig)
+			
