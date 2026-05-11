@@ -472,18 +472,17 @@ class SFinder(object):
 			# - Get WCS
 			self.wcs = WCS(self.header)
 
-
-
 		return 0
 		
-
-	
 
 	####################################
 	###      RUN
 	####################################
 	def run(self):
 		""" Detect object in image """
+
+		# - Start timer
+		t0= time.time()
 
 		# - Set img size parameters
 		if self.set_img_size_params()<0:
@@ -522,7 +521,6 @@ class SFinder(object):
 			logger.error("Unsupported image format (%s) given!" % (image_ext))
 			return -1
 		
-
 		img_fullpath= os.path.abspath(image_path)
 		img_path_base= os.path.basename(img_fullpath)
 		img_path_base_noext= os.path.splitext(img_path_base)[0]
@@ -553,6 +551,9 @@ class SFinder(object):
 		logger.info("#%d objects found in image %s ..." % (len(bboxes_det), image_path))
 		
 		# - Set sources collection
+		#self.sources= {"data": []}
+		self.sources["filepath"]= image_path
+		self.sources["sname"]= self.image_id
 		self.sources["sources"]= []
 		
 		for i in range(len(bboxes_det)):
@@ -583,6 +584,14 @@ class SFinder(object):
 				
 			self.sources["sources"].append(source)
 		
+		# - Save to file
+		logger.info("Saving source results to file ...")
+		self.save()
+
+		# - Stop timer and count runtime
+		t1= time.time()
+		runtime= t1-t0
+		logger.info("Run completed in %d seconds" % (runtime))
 
 		return 0
 
@@ -772,7 +781,12 @@ class SFinder(object):
 
 		# - Fill list of edge sources and final merged sources (not at edge)
 		sourcesToBeMerged= []
+		image_path= self.config['image_path']
+		#img_fullpath= os.path.abspath(image_path)
+		self.sources["filepath"]= image_path
+		self.sources["sname"]= self.image_id
 		self.sources["sources"]= []
+		
 		for tile_index in range(len(self.tile_sources["sources"])):
 			tileData= self.tile_sources["sources"][tile_index]
 			sources= tileData["objs"]
