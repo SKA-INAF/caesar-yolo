@@ -574,7 +574,7 @@ class SFinder(object):
 		
 		# - Set sources collection
 		#self.sources= {"data": []}
-		self.sources["filepath"]= image_path
+		self.sources["filepath"]= img_path_base
 		self.sources["sname"]= self.image_id
 		self.sources["sources"]= []
 		
@@ -822,8 +822,9 @@ class SFinder(object):
 		# - Fill list of edge sources and final merged sources (not at edge)
 		sourcesToBeMerged= []
 		image_path= self.config['image_path']
-		#img_fullpath= os.path.abspath(image_path)
-		self.sources["filepath"]= image_path
+		img_fullpath= os.path.abspath(image_path)
+		img_path_base= os.path.basename(img_fullpath)
+		self.sources["filepath"]= img_path_base
 		self.sources["sname"]= self.image_id
 		self.sources["sources"]= []
 		
