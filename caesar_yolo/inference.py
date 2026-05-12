@@ -331,7 +331,8 @@ class SFinder(object):
 		self.save_tile_regions= config['save_tile_region']
 		self.write_to_ds9= config['save_region']
 		self.sregions= []
-		self.outfile_ds9= ""
+		#self.outfile_ds9= ""
+		self.outfile_ds9= config['outfile_region']
 		self.class_color_map_ds9= {
 			'bkg': "black",
 			'spurious': "red",
@@ -353,7 +354,8 @@ class SFinder(object):
 		# - Save json catalog output file
 		self.save_tile_json= config['save_tile_catalog']
 		self.write_to_json= config['save_catalog']
-		self.outfile_json= ""
+		#self.outfile_json= ""
+		self.outfile_json= config['outfile_json']
 		
 		# - Save image FITS
 		self.save_tile_img= config['save_tile_img']
@@ -362,10 +364,8 @@ class SFinder(object):
 		# - Save detections plot
 		self.save_plot= config['save_plot']
 		self.draw_class_label_in_caption= config['draw_class_label_in_caption']
-		self.outfile_plot= ""
-		
-		
-		
+		#self.outfile_plot= ""
+		self.outfile_plot= config['outfile_plot']
 		
 	def set_img_size_params(self):
 		""" Set image size parameters """

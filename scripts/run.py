@@ -148,9 +148,9 @@ def parse_args():
 	parser.set_defaults(save_tile_region=False)
 	parser.add_argument('--save_tile_img', dest='save_tile_img', action='store_true')	
 	parser.set_defaults(save_tile_img=False)
-	parser.add_argument('--detect_outfile', required=False, metavar="Output plot filename", type=str, default="", help='Output plot PNG filename (internally generated if left empty)')
+	parser.add_argument('--detect_outfile_plot', required=False, metavar="Output plot filename", type=str, default="", help='Output plot PNG filename (internally generated if left empty)')
 	parser.add_argument('--detect_outfile_json', required=False, metavar="Output json filename with detected objects", type=str, default="", help='Output json filename with detected objects (internally generated if left empty)')
-
+	parser.add_argument('--detect_outfile_region', required=False, metavar="Output DS9 region filename", type=str, default="", help='Output DS9 region filename (internally generated if left empty)')
 	
 	args = parser.parse_args()
 
@@ -436,8 +436,9 @@ def main():
 	CONFIG['score_thr']= args.scoreThr
 	CONFIG['merge_overlap_iou_thr_soft']= args.merge_overlap_iou_thr_soft
 	CONFIG['merge_overlap_iou_thr_hard']= args.merge_overlap_iou_thr_hard	
-	CONFIG['outfile']= args.detect_outfile
+	CONFIG['outfile_plot']= args.detect_outfile_plot
 	CONFIG['outfile_json']= args.detect_outfile_json
+	CONFIG['outfile_region']= args.detect_outfile_region
 	CONFIG['draw_plot']= args.draw_plots
 	CONFIG['draw_class_label_in_caption']= args.draw_class_label_in_caption
 	CONFIG['save_plot']= args.save_plots

@@ -44,7 +44,7 @@ CONFIG = {
 	# - DS9 region output options
 	'save_region': True,
 	'save_tile_region': False,
-	'outfile': '',
+	'outfile_region': '',
 	
 	# - Image output file options
 	'save_img': False,
@@ -54,6 +54,6 @@ CONFIG = {
 	'draw_plot': False,
 	'draw_class_label_in_caption': True,
 	'save_plot': False,
-	
+	'outfile_plot': '',
 
 }## close dict
