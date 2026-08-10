@@ -523,14 +523,30 @@ class SFinder(object):
 			
 			image_data, header, wcs= res 
 			
-		elif image_ext==".png" or image_ext==".jpg":
-			image_data= plt.imread(image_path)
-			image_shape= image_data.shape
-			ndim= image_data.ndim
-			if ndim==3 and image_shape[2]==4:# remove alpha channel
-				image_without_alpha = image_data[:,:,:3]
-				image_data= image_without_alpha
-				
+		#elif image_ext==".png" or image_ext==".jpg":
+		#	image_data= plt.imread(image_path)
+		#	image_shape= image_data.shape
+		#	ndim= image_data.ndim
+		#	if ndim==3 and image_shape[2]==4:# remove alpha channel
+		#		image_without_alpha = image_data[:,:,:3]
+		#		image_data= image_without_alpha
+		
+		elif image_ext.lower() in [".png", ".jpg", ".jpeg"]:
+			try:
+				with Image.open(image_path) as img:
+					logger.info("Input raster image mode=%s size=%s", img.mode, img.size)
+
+					if img.mode not in ["L", "I", "F"]:
+						logger.warning("Input image has mode=%s. The CAESAR-YOLO model was trained on single-channel grayscale images. Converting input to grayscale.", img.mode)
+						img = img.convert("L")
+
+					image_data = np.asarray(img)
+
+			except Exception as ex:
+				logger.error("Failed to read image %s: %s", image_path, ex)
+				return -1
+		
+			
 			header= None
 						
 		else:
